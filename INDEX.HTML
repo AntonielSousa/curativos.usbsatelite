@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SETOR DE CURATIVOS | UBS SATÉLITE</title>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --primary-color: #386bf7;
+      --dark-bg: #1e1e1e;
+      --light-bg: #2c2c2c;
+      --text-color: #ffffff;
+      --text-muted: #ccc;
+    }
+    body {
+      margin: 0;
+      padding-bottom: 80px;
+      font-family: 'Montserrat', Arial, sans-serif;
+      background: linear-gradient(-45deg, #1e1e1e, #2a005f, #1f0033, #000000);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      color: var(--text-color);
+    }
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    #login-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+    }
+    #login-box {
+        background: var(--dark-bg);
+        padding: 40px;
+        border-radius: 15px;
+        border: 1px solid var(--primary-color);
+        width: 100%;
+        max-width: 400px;
+        box-shadow: 0 10px 30px rgba(56, 107, 247, 0.2);
+    }
+    #login-error {
+        display: none;
+        color: #ff5252;
+        margin-top: 15px;
+        text-align: center;
+    }
+
+    #app-container {
+        display: none;
+    }
+    
+    .role-enfermagem .delete-btn {
+        display: none !important;
+    }
+
+    .top-right-controls {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        display: flex;
+        gap: 10px;
+    }
+
+    .header { padding: 40px 0 20px; }
+    .logo { width: 150px; }
+    .footer {
+      position: fixed; bottom: 0; width: 100%;
+      background-color: #212121; color: var(--text-muted);
+      padding: 10px 0; text-align: center; font-size: 14px;
+      z-index: 1500;
+    }
+    .footer a { color: var(--primary-color); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+
+    .controls-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        gap: 1rem;
+    }
+    .form-control, .custom-select {
+      background-color: var(--light-bg); color: var(--text-color);
+      border: 1px solid #444; border-radius: 8px;
+    }
+    .form-control:disabled {
+        background-color: #3a3a3a;
+        opacity: 0.7;
+    }
+    .form-control:focus, .custom-select:focus {
+      background-color: var(--light-bg); color: var(--text-color);
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.2rem rgba(56, 107, 247, 0.25);
+    }
+    .custom-select[multiple] {
+        height: 150px;
+    }
+    .table-responsive {
+        background-color: rgba(30,30,30,0.8);
+        border-radius: 10px;
+    }
+    .table thead th {
+        background-color: var(--primary-color);
+        color: var(--text-color);
+        border-bottom: 0;
+    }
+    .table td, .table th {
+        border-top: 1px solid #444;
+        vertical-align: middle;
+    }
+    .table-hover tbody tr:hover {
+        background-color: rgba(56, 107, 247, 0.2);
+        color: var(--text-color);
+    }
+    .modal-content {
+        background-color: var(--dark-bg);
+        border: 1px solid var(--primary-color);
+        border-radius: 12px;
+    }
+    .modal-header, .modal-footer {
+        border-color: #444;
+    }
+    .close { color: var(--text-color); }
+    
+    #atendimentoHistory th { background-color: #333; }
+    #patientDetails p { margin-bottom: 0.5rem; }
+
+    /* --- ESTILO ALTERADO PARA OS BOTÕES --- */
+    #printPatientListBtn, #logoutBtn {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        border-radius: 12px;
+        padding: 14px 24px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid #ffffff;
+    }
+
+    #printPatientListBtn {
+        background-color: #ffffff;
+        color: #000000;
+    }
+    #printPatientListBtn:hover {
+        background-color: #000000;
+        color: #ffffff;
+    }
+    #logoutBtn {
+        background-color: transparent;
+        color: #ffffff;
+    }
+    #logoutBtn:hover {
+        background-color: #ffffff;
+        color: #000000;
+    }
+    
+    #print-report-area { display: none; }
+    
+    @media print {
+      body > * {
+        visibility: hidden;
+      }
+      #print-report-area, #print-report-area * {
+        visibility: visible;
+      }
+      #print-report-area {
+        display: block; 
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 1cm;
+        font-family: Arial, sans-serif;
+        color: #000;
+      }
+      .print-header {
+        text-align: center;
+        margin-bottom: 25px;
+        border-bottom: 2px solid #ccc;
+        padding-bottom: 15px;
+      }
+      .print-header img { max-width: 180px; margin-bottom: 10px; }
+      .print-header h2 { font-size: 1.4rem; color: #000; margin: 0; }
+      .print-header p { font-size: 10pt; color: #555; margin-top: 5px; }
+      
+      .print-patient-details {
+          margin-bottom: 20px;
+      }
+      .print-patient-details p {
+          font-size: 12pt;
+          margin: 4px 0;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 9pt;
+      }
+      th, td {
+        border: 1px solid #999;
+        padding: 5px;
+        text-align: left;
+        word-break: break-word;
+      }
+      thead th { background-color: #E0E0E0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
+      tfoot td { font-weight: bold; background-color: #f2f2f2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
+    }
+  </style>
+</head>
+<body>
+
+<div id="login-overlay">
+    <div id="login-box">
+        <h3 class="text-center mb-3">Sistema de Curativos</h3>
+        <p class="text-center text-muted small mb-4">UBS Cidade Satélite</p>
+        <form id="login-form">
+            <div class="form-group">
+                <label for="username">Usuário</label>
+                <input type="text" id="username" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block mt-4">Entrar</button>
+            <p id="login-error">Usuário ou senha inválidos.</p>
+        </form>
+    </div>
+</div>
+
+
+<div id="app-container">
+    <div class="top-right-controls">
+        <button id="logoutBtn">Sair</button>
+        <button id="printPatientListBtn">Imprimir Lista</button>
+    </div>
+
+    <div class="container mt-4">
+      <header class="header text-center">
+        <img src="https://www.natal.rn.gov.br/sme/matriculaonline/img/logo_natal_ws.png" alt="Logomarca da Prefeitura de Natal" class="logo">
+        <h1 class="mt-3">CONTROLE DE CURATIVOS</h1>
+        <p class="lead text-muted">Gerenciamento de Pacientes e Atendimentos</p>
+      </header>
+    
+      <main>
+        <div class="controls-container">
+            <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#patientModal" id="addPatientBtn">
+                + Adicionar Paciente
+            </button>
+            <input type="text" id="searchInput" class="form-control form-control-lg w-50" placeholder="Buscar por nome ou Cartão SUS...">
+        </div>
+    
+        <div class="table-responsive">
+            <table class="table table-dark table-hover">
+                <thead>
+                    <tr>
+                        <th>Nome do Paciente</th>
+                        <th>Idade</th>
+                        <th>Tipo de Ferida</th>
+                        <th>Cartão SUS</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="patientTableBody"></tbody>
+            </table>
+        </div>
+        
+        <div id="print-report-area"></div>
+      </main>
+    </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <span>Desenvolvido por <a href="https://www.instagram.com/solutytecnologia/#" target="_blank">ANTONIEL SOUSA </a> &copy; 2025. Todos os direitos reservados.</span>
+  </div>
+</footer>
+
+<div class="modal fade" id="patientModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="patientModalLabel">Adicionar Novo Paciente</h5>
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <form id="patientForm">
+          <input type="hidden" id="patientId">
+          <div class="form-group">
+            <label for="nome">Nome Completo</label>
+            <input type="text" class="form-control" id="nome" required>
+          </div>
+          <div class="row">
+            <div class="col-md-6 form-group">
+              <label for="nascimento">Data de Nascimento</label>
+              <input type="date" class="form-control" id="nascimento" required>
+            </div>
+            <div class="col-md-6 form-group">
+                <label for="cartaoSus">Nº Cartão SUS</label>
+                <input type="text" class="form-control" id="cartaoSus" required>
+            </div>
+          </div>
+          <div class="row">
+             <div class="col-md-6 form-group">
+                <label for="sexo">Sexo</label>
+                <select id="sexo" class="custom-select">
+                    <option value="Masculino">Masculino</option>
+                    <option value="Feminino">Feminino</option>
+                </select>
+            </div>
+             <div class="col-md-6 form-group">
+                 <label for="endereco">Endereço</label>
+                 <input type="text" class="form-control" id="endereco">
+            </div>
+          </div>
+          <hr style="border-color: #444;">
+          <h5 class="mt-3">Informações da Lesão</h5>
+          <div class="form-group">
+            <label for="coberturaUtilizada">Cobertura(s) Utilizada(s) (Segure Ctrl/Cmd para selecionar várias)</label>
+            <select id="coberturaUtilizada" class="custom-select" multiple></select>
+          </div>
+          <div class="row">
+            <div class="col-md-6 form-group">
+                <label for="tipoFerida">Tipo de Ferida</label>
+                <select id="tipoFerida" class="custom-select"></select>
+            </div>
+            <div class="col-md-6 form-group">
+                <label for="condicaoAtual">Condição Atual</label>
+                <select id="condicaoAtual" class="custom-select"></select>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 form-group">
+                <label for="nLesoes">Nº de Lesões/Placas/Aplicações</label>
+                <input type="number" class="form-control" id="nLesoes" min="1" value="1">
+            </div>
+            <div class="col-md-6 form-group">
+                <label for="curativosSemanais">Nº de Curativos Semanais</label>
+                <input type="number" class="form-control" id="curativosSemanais" min="0" value="1">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="savePatientBtn">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="detailsModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="detailsModalLabel">Detalhes do Paciente</h5>
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div id="patientDetails" class="mb-4"></div>
+        <hr style="border-color: #444;">
+        <h5 class="mt-4">Adicionar Novo Atendimento</h5>
+        <form id="addAtendimentoForm" class="p-3 bg-dark rounded">
+          <input type="hidden" id="atendimentoPatientId">
+          <div class="row">
+            <div class="col-md-8 form-group">
+                <label for="procedimento">Procedimento Realizado</label>
+                <textarea class="form-control" id="procedimento" rows="3" required></textarea>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="dataAtendimento">Data do Atendimento</label>
+                    <input type="date" class="form-control" id="dataAtendimento" required>
+                </div>
+                <div class="form-group">
+                    <label for="proximoRetorno">Próximo Retorno</label>
+                    <input type="date" class="form-control" id="proximoRetorno">
+                </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-success float-right">Salvar Atendimento</button>
+        </form>
+        <h5 class="mt-5">Histórico de Atendimentos</h5>
+        <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+          <table class="table table-sm table-dark">
+            <thead>
+              <tr><th>Data</th><th>Procedimento</th><th>Próximo Retorno</th><th class="text-center">Ação</th></tr>
+            </thead>
+            <tbody id="atendimentoHistory"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-info" id="printPatientProfileBtn">Imprimir Prontuário</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loginOverlay = document.getElementById('login-overlay');
+    const loginForm = document.getElementById('login-form');
+    const loginError = document.getElementById('login-error');
+    const appContainer = document.getElementById('app-container');
+
+    const patientTableBody = document.getElementById('patientTableBody');
+    const searchInput = document.getElementById('searchInput');
+    const savePatientBtn = document.getElementById('savePatientBtn');
+    const addAtendimentoForm = document.getElementById('addAtendimentoForm');
+    const tipoFeridaSelect = document.getElementById('tipoFerida');
+    const condicaoAtualSelect = document.getElementById('condicaoAtual');
+    const coberturaUtilizadaSelect = document.getElementById('coberturaUtilizada');
+    const cartaoSusInput = document.getElementById('cartaoSus');
+    const printPatientProfileBtn = document.getElementById('printPatientProfileBtn');
+    const printPatientListBtn = document.getElementById('printPatientListBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    const woundTypes = {
+      'IC': 'IC - Incisão Cirúrgica', 'LP': 'LP - Lesão por Pressão', 'Q': 'Q - Queimadura',
+      'UA': 'UA - Úlcera Arterial', 'D': 'D - Deiscência', 'UV': 'UV - Úlcera Venosa',
+      'UN': 'UN - Úlcera Neurotrófica', 'UT': 'UT - Úlcera Traumática', 'PD': 'PD - Pé Diabético',
+      'LT': 'LT - Lesão Traumática'
+    };
+    const currentConditions = {
+      'N': 'N - Paciente Novo', 'TT': 'TT - Tratamento', 'C': 'C - Cura',
+      'A': 'A - Abandono', 'O': 'O - Óbito', 'T': 'T - Transferência'
+    };
+    const coberturaTypes = [
+        "ALGINATO DE CÁLCIO", "POLIHEXAMETILENO DE BIGUANIDA (PHMB)", "CADEXÔMERO DE IODO (IODOSORB)",
+        "CARVÃO ATIVADO COM PRATA", "CREME DE BARREIRA", "FILME TRANSPARENTE", "GAZE DE RAYON COM AGE",
+        "HIDROGEL", "GAZE ANTIMICROBIANA", "HIDROCOLOIDE - PLACA", "TERAPIA ELÁSTICA",
+        "TERAPIA INELÁSTICA - BOTA DE UNA", "AQUACEL", "BIATAIN NÃO ADESIVO", "SEM PRATA", "ALLEVYN"
+    ];
+
+    const users = [
+        {
+            username: 'admin',
+            passwordHash: '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92'
+        },
+        {
+            username: 'enfermagem',
+            passwordHash: '07d394141c47c251a8412852631278287f311316518339b98a3e8a4a50a16827'
+        }
+    ];
+
+    async function sha256(string) {
+        const utf8 = new TextEncoder().encode(string);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex;
+    }
+
+    function applyRolePermissions() {
+        const role = sessionStorage.getItem('loggedInUserRole');
+        if (role) {
+            document.body.classList.add(`role-${role}`);
+        }
+    }
+
+    function showApp() {
+        loginOverlay.style.display = 'none';
+        appContainer.style.display = 'block';
+        applyRolePermissions();
+        initializeSystem();
+    }
+
+    if (sessionStorage.getItem('isLoggedIn') === 'true') {
+        showApp();
+    }
+
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('username').value.toLowerCase();
+        const password = document.getElementById('password').value;
+        
+        const foundUser = users.find(user => user.username === username);
+        
+        if (foundUser) {
+            const passwordHash = await sha256(password);
+            if (passwordHash === foundUser.passwordHash) {
+                sessionStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('loggedInUserRole', foundUser.username);
+                showApp();
+                return;
+            }
+        }
+        
+        loginError.style.display = 'block';
+    });
+
+    function logout() {
+        if (confirm('Tem certeza que deseja sair?')) {
+            sessionStorage.clear();
+            location.reload();
+        }
+    }
+
+    let patients = [];
+
+    function initializeSystem() {
+        let storedPatientsData = localStorage.getItem('curativosPacientes');
+        let parsedPatients = storedPatientsData ? JSON.parse(storedPatientsData) : null;
+
+        if (!parsedPatients || parsedPatients.length === 0) {
+            patients = getInitialPatients();
+            savePatients(); 
+        } else {
+            patients = parsedPatients;
+        }
+        
+        populateSelectWithOptions(tipoFeridaSelect, woundTypes);
+        populateSelectWithOptions(condicaoAtualSelect, currentConditions);
+        populateSelectWithArray(coberturaUtilizadaSelect, coberturaTypes);
+        renderPatientTable();
+    }
+    
+    function getInitialPatients() {
+        const normalizeCobertura = (name) => {
+            const upperName = name.trim().toUpperCase();
+            if (upperName.includes("BOTA") || upperName.includes("K2")) return "TERAPIA INELÁSTICA - BOTA DE UNA";
+            if (upperName.includes("ALGINATO")) return "ALGINATO DE CÁLCIO";
+            if (upperName.includes("PHMB")) return "POLIHEXAMETILENO DE BIGUANIDA (PHMB)";
+            if (upperName.includes("CARVÃO ATIVADO")) return "CARVÃO ATIVADO COM PRATA";
+            if (upperName.includes("BARREIRA")) return "CREME DE BARREIRA";
+            if (upperName.includes("RAYON")) return "GAZE DE RAYON COM AGE";
+            if (upperName.includes("HIDROCOLOIDE")) return "HIDROCOLOIDE - PLACA";
+            if (upperName === 'ALEVYM' || upperName === 'ALEVYN') return "ALLEVYN";
+            if (upperName === 'ACQUACEL') return 'AQUACEL';
+            if (upperName === 'BIATAIN') return 'BIATAIN NÃO ADESIVO';
+            return upperName;
+        };
+
+        const initialData = [
+            {nome: "DINALVA FERNANDES PESSOA", endereco: "RUA SUCATINGA, 35 PITIMBU", idade: 87, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "ALEVYM"], tipoFerida: "LT", condicao: "TT"},
+            {nome: "EDMILSON MARCELINO MEDEIROS", endereco: "Rua Porto Itapoana, Nº 96 - Pitimbú", idade: 64, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVA", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "UV", condicao: "TT"},
+            {nome: "FRANCISCO DE ASSIS DAMASCENO", endereco: "Rua da Aroeira, Nº 7694 - Pitimbú", idade: 61, sexo: "M", nLesoes: "3", curativosSemanais: "3", coberturas: ["ALLEVYN", "CREME DE BARREIRA", "K2"], tipoFerida: "UV", condicao: "TT"},
+            {nome: "GENILSON BEZERRA DE SOUZA", endereco: "R. Flávia Cristina Baracho, Nº 05 - Guarapes", idade: 63, sexo: "M", nLesoes: "3", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "PD", condicao: "TT"},
+            {nome: "ROBSON ALVES DE OLIVEIRA", endereco: "Rua do Melro, Nº 8004 - Pitimbú", idade: 36, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA", "HIDROCOLOIDE", "CARVÃO ATIVADO"], tipoFerida: "UV", condicao: "TT"},
+            {nome: "LUCIMAR VIEIRA DA SILVA", endereco: "Rua Alfredo Pegado Cortez, Nº 3755 - Candelária", idade: 71, sexo: "M", nLesoes: "2", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA", "ALEVYN", "K2"], tipoFerida: "UV", condicao: "TT"},
+            {nome: "ESMERALDINA DANTAS COSTA", endereco: "Rua Pedro Américo, Nº 154 - Pitimbú", idade: 73, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "LT", condicao: "TT"},
+            {nome: "LILIANA TEIXEIRA DA SILVA", endereco: "Rua Catolé do Rocha, Nº 03 - Cidade da Esperança", idade: 59, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["ALLEVYN", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT"},
+            {nome: "ERIVALDO FERREIRA DA SILVA", endereco: "RUA PEDRO TARGINO, 8, Planalto", idade: 55, sexo: "M", nLesoes: "3", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT"},
+            {nome: "SONIA DA SILVA MENEZES", endereco: "RUA MARANATA, 11, Planalto", idade: 60, sexo: "F", nLesoes: "3", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVA", "CREME DE BARREIRA", "K2"], tipoFerida: "UV", condicao: "TT"},
+            {nome: "JOSÉ OLIVEIRA DE ANDRADE", endereco: "Rua Jardim do Éden, 18, Planalto", idade: 71, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT"},
+            {nome: "ANGELITA MACEDO DA SILVA", endereco: "Rua Inácio da Catingueira, Nº 3054- Lagoa Azul", idade: 74, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT"},
+            {nome: "ANTONIO MARCELO DOS SANTOS", endereco: "Rua Rio Pardo, Nº 7695 - Pitimbú", idade: 51, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL"], tipoFerida: "LT", condicao: "TT"},
+            {nome: "GILMAR MATIAS SANTOS", endereco: "Rua da Figueira, Nº 7791 - Pitimbú", idade: 38, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "BIATAIN"], tipoFerida: "UV", condicao: "TT"},
+            {nome: "MARIA OLIVEIRA DA COSTA", endereco: "Rua Itaguará, Nº 4735 - Neópolis", idade: 68, sexo: "F", nLesoes: "2", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "HIDROGEL", "AQUACEL"], tipoFerida: "UV", condicao: "TT"},
+            {nome: "SEBASTIÃO CRISÓSTOMO DE MENEZES JUNIOR", endereco: "Rua Mira Mangue, Nº 672 - Planalto", idade: 64, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL"], tipoFerida: "LT", condicao: "TT"},
+            {nome: "ANTONIA PAULA REGIS DA SILVA PIMENTEL", endereco: "Rua São Gregório, Nº 32 - Planalto", idade: 44, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL"], tipoFerida: "LT", condicao: "TT"},
+            {nome: "MARIA DE LOURDES GOMES DE ARAUJO", endereco: "Rua Serra do Japi, Nº 8017 - Pitimbú", idade: 79, sexo: "F", nLesoes: "2", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "ALLEVYN", "PHMB"], tipoFerida: "LT", condicao: "TT"},
+            {nome: "GERALDO SATURNINO DA SILVA", endereco: "Rua dos Cisnes, Nº 8001 - Pitimbú", idade: 77, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL", "HIDROGEL"], tipoFerida: "LT", condicao: "TT"},
+            {nome: "MARIA DE FÁTIMA DOS SANTOS MACHADO", endereco: "Rua Itamarati de Minas, Nº 2961 - Neópolis", idade: 71, sexo: "F", nLesoes: "4", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "BIATAIN NÃO ADESIVO", "k2"], tipoFerida: "LT", condicao: "A"},
+            {nome: "BRUNO RANIERE MEDEIROS DE OLIVEIRA", endereco: "RUA ALGAROBAS, 1455 PITIMBÚ", idade: 21, sexo: "M", nLesoes: "2", curativosSemanais: "3", coberturas: ["ALEVYN", "ALGINATO", "CREME DE BARREIRA"], tipoFerida: "LT", condicao: "TT"},
+            {nome: "ARNOBIO FONSECA JUNIOR", endereco: "RUA RIO UMARÍ 7715 PITIMBÚ", idade: 52, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["ACQUACEL", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "PD", condicao: "TT"},
+            {nome: "ANTONIO LUIZ DA SILVA", endereco: "RUA FLOR DA SERRA 100 PITIMBÚ", idade: 64, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["ACQUACEL", "CREME DE BARREIRA"], tipoFerida: "LT", condicao: "TT"},
+            {nome: "ANTONIO SOARES DE ALMEIDA", endereco: "RUA MARANATA, 2005 PLANALTO", idade: 64, sexo: "M", nLesoes: "2", curativosSemanais: "3", coberturas: ["ALEVYN", "RAYON"], tipoFerida: "IC", condicao: "TT"},
+            {nome: "GENILDO MARCELINO DE MEDEIROS", endereco: "RUA Alto da Serra, 39 PITIMBÚ", idade: 63, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVA", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "LT", condicao: "TT"},
+            {nome: "INES OLIVEIRA DE ANDRADE", endereco: "RUA DAS TILIAS 2122 PITIMBÚ", idade: 75, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVA", "RAYON"], tipoFerida: "UV", condicao: "TT"},
+            {nome: "SONIA MARIA DOS SANTOS", endereco: "TRAVESSA DIOGO, 127 PLANALTO", idade: 59, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["ALEVYN"], tipoFerida: "IC", condicao: "TT"},
+            {nome: "TIAGO FERREIRA DA SILVA", endereco: "RUA SILVINO SERAFIM DE MEDEIROS, 196 CANDELÁRIA", idade: 41, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["BIATAIN ALGINATO", "CREME DE BARREIRA"], tipoFerida: "IC", condicao: "TT"},
+            {nome: "Rommel Gurgel da Cruz Correia", endereco: "Rua Serra do Caturité, 8055 PITIMBÚ", idade: 52, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["ALLEVYN", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "NOVO"}
+        ];
+        
+        return initialData.map((p, index) => {
+            const birthYear = new Date().getFullYear() - p.idade;
+            const condicaoRaw = p.condicao.trim().toUpperCase();
+
+            return {
+                nome: p.nome.trim(),
+                endereco: p.endereco.trim(),
+                nascimento: `${birthYear}-01-01`,
+                sexo: p.sexo.toUpperCase() === 'F' ? 'Feminino' : 'Masculino',
+                cartaoSus: `GERADO-${String(index + 1).padStart(3, '0')}`,
+                nLesoes: p.nLesoes,
+                curativosSemanais: p.curativosSemanais,
+                coberturaUtilizada: p.coberturas.map(normalizeCobertura),
+                tipoFerida: p.tipoFerida.trim().toUpperCase(),
+                condicaoAtual: condicaoRaw === 'NOVO' ? 'N' : condicaoRaw,
+                id: Date.now().toString() + index,
+                atendimentos: []
+            };
+        });
+    }
+
+    function populateSelectWithOptions(selectElement, options) {
+        selectElement.innerHTML = '<option value="">Selecione...</option>';
+        for (const [key, value] of Object.entries(options)) {
+            selectElement.innerHTML += `<option value="${key}">${value}</option>`;
+        }
+    }
+    
+    function populateSelectWithArray(selectElement, optionsArray) {
+        selectElement.innerHTML = '';
+        optionsArray.forEach(option => {
+            selectElement.innerHTML += `<option value="${option}">${option}</option>`;
+        });
+    }
+
+    function savePatients() {
+        localStorage.setItem('curativosPacientes', JSON.stringify(patients));
+    };
+
+    const calculateAge = (dob) => {
+        if (!dob) return 'N/A';
+        const birthDate = new Date(dob);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return age;
+    };
+
+    const renderPatientTable = (filter = '') => {
+        patientTableBody.innerHTML = '';
+        const lowercasedFilter = filter.toLowerCase();
+        const filteredPatients = patients.filter(p => 
+            p.nome.toLowerCase().includes(lowercasedFilter) ||
+            (p.cartaoSus && p.cartaoSus.toLowerCase().includes(lowercasedFilter))
+        );
+
+        if (filteredPatients.length === 0) {
+            patientTableBody.innerHTML = `<tr><td colspan="5" class="text-center">Nenhum paciente encontrado.</td></tr>`;
+            return;
+        }
+        
+        const sortedPatients = filteredPatients.sort((a, b) => a.nome.localeCompare(b.nome));
+
+        sortedPatients.forEach(patient => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${patient.nome}</td>
+                <td>${calculateAge(patient.nascimento)} anos</td>
+                <td>${woundTypes[patient.tipoFerida] || 'N/A'}</td>
+                <td>${patient.cartaoSus || 'N/A'}</td>
+                <td class="text-center">
+                    <button class="btn btn-info btn-sm" onclick="viewDetails('${patient.id}')">Ver Detalhes</button>
+                    <button class="btn btn-warning btn-sm" onclick="editPatient('${patient.id}')">Editar</button>
+                    <button class="btn btn-danger btn-sm delete-btn" onclick="deletePatient('${patient.id}')">Excluir</button>
+                </td>
+            `;
+            patientTableBody.appendChild(tr);
+        });
+    };
+
+    savePatientBtn.addEventListener('click', () => {
+        const id = document.getElementById('patientId').value;
+        const selectedCoberturas = Array.from(coberturaUtilizadaSelect.selectedOptions).map(option => option.value);
+
+        const patientData = {
+            nome: document.getElementById('nome').value,
+            nascimento: document.getElementById('nascimento').value,
+            cartaoSus: document.getElementById('cartaoSus').value,
+            sexo: document.getElementById('sexo').value,
+            endereco: document.getElementById('endereco').value,
+            nLesoes: document.getElementById('nLesoes').value,
+            curativosSemanais: document.getElementById('curativosSemanais').value,
+            coberturaUtilizada: selectedCoberturas,
+            tipoFerida: document.getElementById('tipoFerida').value,
+            condicaoAtual: document.getElementById('condicaoAtual').value
+        };
+
+        if (!patientData.nome || !patientData.nascimento || !patientData.cartaoSus) {
+            alert('Nome, Data de Nascimento e Cartão SUS são obrigatórios.');
+            return;
+        }
+
+        if (id) {
+            const index = patients.findIndex(p => p.id === id);
+            patients[index] = { ...patients[index], ...patientData };
+        } else {
+            patients.push({ ...patientData, id: Date.now().toString(), atendimentos: [] });
+        }
+        
+        savePatients();
+        renderPatientTable(searchInput.value);
+        $('#patientModal').modal('hide');
+    });
+    
+    window.editPatient = (id) => {
+        const patient = patients.find(p => p.id === id);
+        document.getElementById('patientModalLabel').innerText = 'Editar Paciente';
+        document.getElementById('patientId').value = patient.id;
+        document.getElementById('nome').value = patient.nome;
+        document.getElementById('nascimento').value = patient.nascimento;
+        cartaoSusInput.value = patient.cartaoSus;
+        cartaoSusInput.disabled = false;
+        document.getElementById('sexo').value = patient.sexo;
+        document.getElementById('endereco').value = patient.endereco;
+        document.getElementById('nLesoes').value = patient.nLesoes;
+        document.getElementById('curativosSemanais').value = patient.curativosSemanais;
+        document.getElementById('tipoFerida').value = patient.tipoFerida;
+        document.getElementById('condicaoAtual').value = patient.condicaoAtual;
+        
+        const patientCoberturas = patient.coberturaUtilizada || [];
+        Array.from(coberturaUtilizadaSelect.options).forEach(option => {
+            option.selected = patientCoberturas.includes(option.value);
+        });
+
+        $('#patientModal').modal('show');
+    };
+
+    window.deletePatient = (id) => {
+        if (confirm('Tem certeza que deseja excluir este paciente e todos os seus atendimentos?')) {
+            patients = patients.filter(p => p.id !== id);
+            savePatients();
+            renderPatientTable(searchInput.value);
+        }
+    };
+    
+    window.viewDetails = (id) => {
+        const patient = patients.find(p => p.id === id);
+        const coberturasStr = (patient.coberturaUtilizada && patient.coberturaUtilizada.length > 0) 
+            ? patient.coberturaUtilizada.join(', ') 
+            : 'Não informado';
+
+        document.getElementById('detailsModalLabel').innerText = `Prontuário de: ${patient.nome}`;
+        document.getElementById('patientDetails').innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Cartão SUS:</strong> ${patient.cartaoSus || 'Não informado'}</p>
+                    <p><strong>Idade:</strong> ${calculateAge(patient.nascimento)} anos (${new Date(patient.nascimento).toLocaleDateString('pt-BR', {timeZone: 'UTC'})})</p>
+                    <p><strong>Sexo:</strong> ${patient.sexo || 'Não informado'}</p>
+                    <p><strong>Endereço:</strong> ${patient.endereco || 'Não informado'}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Condição Atual:</strong> ${currentConditions[patient.condicaoAtual] || 'Nenhuma observação'}</p>
+                    <p><strong>Tipo de Ferida:</strong> ${woundTypes[patient.tipoFerida] || 'Não informado'}</p>
+                    <p><strong>Nº de Lesões/Aplicações:</strong> ${patient.nLesoes || 'Não informado'}</p>
+                    <p><strong>Curativos por Semana:</strong> ${patient.curativosSemanais || 'Não informado'}</p>
+                    <p><strong>Cobertura(s) Utilizada(s):</strong> ${coberturasStr}</p>
+                </div>
+            </div>
+        `;
+        document.getElementById('atendimentoPatientId').value = id;
+        document.getElementById('dataAtendimento').valueAsDate = new Date();
+        renderAtendimentoHistory(patient);
+        $('#detailsModal').modal('show');
+    };
+
+    const renderAtendimentoHistory = (patient) => {
+        const historyBody = document.getElementById('atendimentoHistory');
+        historyBody.innerHTML = '';
+        if (!patient.atendimentos || patient.atendimentos.length === 0) {
+            historyBody.innerHTML = '<tr><td colspan="4" class="text-center">Nenhum atendimento registrado.</td></tr>';
+            return;
+        }
+        const sortedAtendimentos = [...patient.atendimentos].sort((a, b) => new Date(b.data) - new Date(a.data));
+        
+        sortedAtendimentos.forEach((at) => {
+            const indexInOriginalArray = patient.atendimentos.indexOf(at);
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${new Date(at.data).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</td>
+                <td>${at.procedimento}</td>
+                <td>${at.retorno ? new Date(at.retorno).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) : 'N/A'}</td>
+                <td class="text-center"><button class="btn btn-danger btn-sm delete-btn" onclick="deleteAtendimento('${patient.id}', ${indexInOriginalArray})">×</button></td>
+            `;
+            historyBody.appendChild(tr);
+        });
+    }
+
+    addAtendimentoForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const patientId = document.getElementById('atendimentoPatientId').value;
+        const patientIndex = patients.findIndex(p => p.id === patientId);
+        
+        const newAtendimento = {
+            data: document.getElementById('dataAtendimento').value,
+            procedimento: document.getElementById('procedimento').value,
+            retorno: document.getElementById('proximoRetorno').value || null
+        };
+
+        if (!patients[patientIndex].atendimentos) {
+            patients[patientIndex].atendimentos = [];
+        }
+        patients[patientIndex].atendimentos.push(newAtendimento);
+        savePatients();
+        renderAtendimentoHistory(patients[patientIndex]);
+        addAtendimentoForm.reset();
+        document.getElementById('dataAtendimento').valueAsDate = new Date();
+    });
+    
+    window.deleteAtendimento = (patientId, atendimentoIndex) => {
+        if(confirm('Tem certeza que deseja excluir este atendimento?')) {
+            const patientIndex = patients.findIndex(p => p.id === patientId);
+            patients[patientIndex].atendimentos.splice(atendimentoIndex, 1);
+            savePatients();
+            renderAtendimentoHistory(patients[patientIndex]);
+        }
+    };
+    
+    function printPatientProfile() {
+        const reportArea = document.getElementById('print-report-area');
+        const patientId = document.getElementById('atendimentoPatientId').value;
+        const patient = patients.find(p => p.id === patientId);
+
+        if (!patient) {
+            alert('Paciente não encontrado para impressão.');
+            return;
+        }
+
+        const coberturasStr = (patient.coberturaUtilizada && patient.coberturaUtilizada.length > 0) 
+            ? patient.coberturaUtilizada.join(', ') 
+            : 'Não informado';
+
+        let reportHtml = `
+            <div class="print-header">
+                <img src="https://www.natal.rn.gov.br/sme/matriculaonline/img/logo_natal_ws.png" alt="Logomarca da Prefeitura de Natal">
+                <h2>Prontuário do Paciente</h2>
+            </div>
+            <div class="print-patient-details">
+                <p><strong>Nome:</strong> ${patient.nome}</p>
+                <p><strong>Cartão SUS:</strong> ${patient.cartaoSus || 'Não informado'}</p>
+                <p><strong>Data de Nasc.:</strong> ${new Date(patient.nascimento).toLocaleDateString('pt-BR', {timeZone: 'UTC'})} (${calculateAge(patient.nascimento)} anos)</p>
+                <p><strong>Endereço:</strong> ${patient.endereco || 'Não informado'}</p>
+                <p><strong>Tipo de Ferida:</strong> ${woundTypes[patient.tipoFerida] || 'Não informado'}</p>
+                <p><strong>Cobertura(s) Utilizada(s):</strong> ${coberturasStr}</p>
+            </div>
+            <hr>
+            <h3>Histórico de Atendimentos</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Procedimento Realizado</th>
+                        <th>Próximo Retorno</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        if (patient.atendimentos && patient.atendimentos.length > 0) {
+            const sortedAtendimentos = [...patient.atendimentos].sort((a, b) => new Date(a.data) - new Date(b.data));
+            sortedAtendimentos.forEach(at => {
+                reportHtml += `
+                    <tr>
+                        <td>${new Date(at.data).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</td>
+                        <td>${at.procedimento}</td>
+                        <td>${at.retorno ? new Date(at.retorno).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) : 'N/A'}</td>
+                    </tr>
+                `;
+            });
+        } else {
+            reportHtml += '<tr><td colspan="3" style="text-align:center;">Nenhum atendimento registrado.</td></tr>';
+        }
+
+        reportHtml += `
+                </tbody>
+            </table>
+        `;
+        
+        reportArea.innerHTML = reportHtml;
+        window.print();
+    }
+
+    function printPatientList() {
+        const reportArea = document.getElementById('print-report-area');
+        let reportHtml = `
+            <div class="print-header">
+                <img src="https://www.natal.rn.gov.br/sme/matriculaonline/img/logo_natal_ws.png" alt="Logomarca da Prefeitura de Natal">
+                <h2>Lista Geral de Pacientes</h2>
+                <p>Relatório gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Idade</th>
+                        <th>Cartão SUS</th>
+                        <th>Tipo de Ferida</th>
+                        <th>Cobertura(s)</th>
+                        <th>Cur./Semana</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        if(patients.length === 0) {
+            reportHtml += '<tr><td colspan="6" style="text-align:center;">Nenhum paciente cadastrado.</td></tr>';
+        } else {
+            const sortedPatients = [...patients].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
+
+            sortedPatients.forEach(patient => {
+                const idade = calculateAge(patient.nascimento);
+                const tipoFerida = woundTypes[patient.tipoFerida] || 'Não informado';
+                const coberturas = (patient.coberturaUtilizada && patient.coberturaUtilizada.length > 0) ? patient.coberturaUtilizada.join(', ') : 'N/A';
+                const semanais = patient.curativosSemanais || 'N/A';
+                
+                reportHtml += `
+                    <tr>
+                        <td>${patient.nome}</td>
+                        <td>${idade}</td>
+                        <td>${patient.cartaoSus || 'N/A'}</td>
+                        <td>${tipoFerida}</td>
+                        <td>${coberturas}</td>
+                        <td>${semanais}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        reportHtml += `
+                </tbody>
+            </table>
+        `;
+        
+        reportArea.innerHTML = reportHtml;
+        window.print();
+    }
+    
+    printPatientProfileBtn.addEventListener('click', printPatientProfile);
+    printPatientListBtn.addEventListener('click', printPatientList); 
+    logoutBtn.addEventListener('click', logout);
+
+    searchInput.addEventListener('input', (e) => {
+        renderPatientTable(e.target.value);
+    });
+    
+    $('#patientModal').on('show.bs.modal', function (event) {
+        let button = $(event.relatedTarget);
+        if (button.attr('id') === 'addPatientBtn') {
+            document.getElementById('patientForm').reset();
+            document.getElementById('patientId').value = '';
+            document.getElementById('patientModalLabel').innerText = 'Adicionar Novo Paciente';
+            cartaoSusInput.disabled = false;
+        }
+    });
+
+});
+</script>
+</body>
+</html>
