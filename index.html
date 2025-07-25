@@ -194,41 +194,44 @@
         flex-direction: column;
         align-items: center;
         text-align: center;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
       }
       .print-header img { 
-        max-width: 180px; 
-        margin-bottom: 10px; 
+        max-width: 120px; 
+        margin-bottom: 5px;
       }
       .print-main-title h4 {
-        font-size: 14pt;
+        font-size: 11pt;
         font-weight: bold;
-        margin: 2px 0;
+        margin: 1px 0;
+        line-height: 1.2;
         text-transform: uppercase;
       }
       .print-header hr {
         width: 100%;
-        border-top: 2px solid #000;
-        margin: 10px 0;
+        border-top: 1px solid #888;
+        margin: 5px 0;
       }
       .report-title {
-        font-size: 12pt;
+        font-size: 10pt;
         font-weight: bold;
         text-transform: uppercase;
+        margin: 0;
       }
       .report-month {
-        font-size: 12pt;
+        font-size: 10pt;
         font-weight: bold;
         color: red;
         text-transform: uppercase;
+        margin-top: 2px;
       }
       .print-meta-info {
         width: 100%;
         text-align: left;
-        font-size: 11pt;
+        font-size: 9pt;
       }
       .print-meta-info p {
-        margin: 2px 0;
+        margin: 1px 0;
       }
 
       .print-patient-details {
@@ -352,7 +355,7 @@
             </div>
             <div class="col-md-6 form-group">
                 <label for="cartaoSus">Nº Cartão SUS</label>
-                <input type="text" class="form-control" id="cartaoSus" required>
+                <input type="text" class="form-control" id="cartaoSus">
             </div>
           </div>
           <div class="row">
@@ -524,8 +527,8 @@ document.addEventListener('DOMContentLoaded', function() {
     ];
     
     const nurses = [
-        { id: 'nurse1', fullName: 'VALÉRIA FERNANDES PEDRO - COREN/RN 517.700'},
-        { id: 'nurse2', fullName: 'MARIA KAROLINA XAVIER LOPES - COREN/RN 654.321'}
+        { id: 'nurse1', fullName: 'VALÉRIA FERNANDES PEDRO - COREN/RN 517.780'},
+        { id: 'nurse2', fullName: 'MARIA KAROLINA XAVIER LOPES - COREN/RN 677.800'}
     ];
 
     async function sha256(string) {
@@ -596,35 +599,49 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function getInitialPatients() {
-        const normalizeCobertura = (name) => {
-            const upperName = name.trim().toUpperCase();
-            if (upperName.includes("BOTA") || upperName.includes("K2")) return "TERAPIA INELÁSTICA - BOTA DE UNA";
-            if (upperName.includes("ALGINATO")) return "ALGINATO DE CÁLCIO";
-            if (upperName.includes("PHMB")) return "POLIHEXAMETILENO DE BIGUANIDA (PHMB)";
-            if (upperName.includes("CARVÃO ATIVADO")) return "CARVÃO ATIVADO COM PRATA";
-            if (upperName.includes("BARREIRA")) return "CREME DE BARREIRA";
-            if (upperName.includes("RAYON")) return "GAZE DE RAYON COM AGE";
-            if (upperName.includes("HIDROCOLOIDE")) return "HIDROCOLOIDE - PLACA";
-            if (upperName === 'ALEVYM' || upperName === 'ALEVYN') return "ALLEVYN";
-            if (upperName === 'ACQUACEL') return 'AQUACEL';
-            if (upperName === 'BIATAIN') return 'BIATAIN NÃO ADESIVO';
-            return upperName;
-        };
         const initialData = [
-            {nome: "DINALVA FERNANDES PESSOA", endereco: "RUA SUCATINGA, 35 PITIMBU", idade: 87, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "ALEVYM"], tipoFerida: "LT", condicao: "TT"}, {nome: "EDMILSON MARCELINO MEDEIROS", endereco: "Rua Porto Itapoana, Nº 96 - Pitimbú", idade: 64, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVA", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "UV", condicao: "TT"}, {nome: "FRANCISCO DE ASSIS DAMASCENO", endereco: "Rua da Aroeira, Nº 7694 - Pitimbú", idade: 61, sexo: "M", nLesoes: "3", curativosSemanais: "3", coberturas: ["ALLEVYN", "CREME DE BARREIRA", "K2"], tipoFerida: "UV", condicao: "TT"}, {nome: "GENILSON BEZERRA DE SOUZA", endereco: "R. Flávia Cristina Baracho, Nº 05 - Guarapes", idade: 63, sexo: "M", nLesoes: "3", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "PD", condicao: "TT"}, {nome: "ROBSON ALVES DE OLIVEIRA", endereco: "Rua do Melro, Nº 8004 - Pitimbú", idade: 36, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA", "HIDROCOLOIDE", "CARVÃO ATIVADO"], tipoFerida: "UV", condicao: "TT"}, {nome: "LUCIMAR VIEIRA DA SILVA", endereco: "Rua Alfredo Pegado Cortez, Nº 3755 - Candelária", idade: 71, sexo: "M", nLesoes: "2", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA", "ALEVYN", "K2"], tipoFerida: "UV", condicao: "TT"}, {nome: "ESMERALDINA DANTAS COSTA", endereco: "Rua Pedro Américo, Nº 154 - Pitimbú", idade: 73, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "LT", condicao: "TT"}, {nome: "LILIANA TEIXEIRA DA SILVA", endereco: "Rua Catolé do Rocha, Nº 03 - Cidade da Esperança", idade: 59, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["ALLEVYN", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT"}, {nome: "ERIVALDO FERREIRA DA SILVA", endereco: "RUA PEDRO TARGINO, 8, Planalto", idade: 55, sexo: "M", nLesoes: "3", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT"}, {nome: "SONIA DA SILVA MENEZES", endereco: "RUA MARANATA, 11, Planalto", idade: 60, sexo: "F", nLesoes: "3", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVA", "CREME DE BARREIRA", "K2"], tipoFerida: "UV", condicao: "TT"}, {nome: "JOSÉ OLIVEIRA DE ANDRADE", endereco: "Rua Jardim do Éden, 18, Planalto", idade: 71, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT"}, {nome: "ANGELITA MACEDO DA SILVA", endereco: "Rua Inácio da Catingueira, Nº 3054- Lagoa Azul", idade: 74, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT"}, {nome: "ANTONIO MARCELO DOS SANTOS", endereco: "Rua Rio Pardo, Nº 7695 - Pitimbú", idade: 51, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL"], tipoFerida: "LT", condicao: "TT"}, {nome: "GILMAR MATIAS SANTOS", endereco: "Rua da Figueira, Nº 7791 - Pitimbú", idade: 38, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREira", "BIATAIN"], tipoFerida: "UV", condicao: "TT"}, {nome: "MARIA OLIVEIRA DA COSTA", endereco: "Rua Itaguará, Nº 4735 - Neópolis", idade: 68, sexo: "F", nLesoes: "2", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "HIDROGEL", "AQUACEL"], tipoFerida: "UV", condicao: "TT"}, {nome: "SEBASTIÃO CRISÓSTOMO DE MENEZES JUNIOR", endereco: "Rua Mira Mangue, Nº 672 - Planalto", idade: 64, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL"], tipoFerida: "LT", condicao: "TT"}, {nome: "ANTONIA PAULA REGIS DA SILVA PIMENTEL", endereco: "Rua São Gregório, Nº 32 - Planalto", idade: 44, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL"], tipoFerida: "LT", condicao: "TT"}, {nome: "MARIA DE LOURDES GOMES DE ARAUJO", endereco: "Rua Serra do Japi, Nº 8017 - Pitimbú", idade: 79, sexo: "F", nLesoes: "2", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "ALLEVYN", "PHMB"], tipoFerida: "LT", condicao: "TT"}, {nome: "GERALDO SATURNINO DA SILVA", endereco: "Rua dos Cisnes, Nº 8001 - Pitimbú", idade: 77, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL", "HIDROGEL"], tipoFerida: "LT", condicao: "TT"}, {nome: "MARIA DE FÁTIMA DOS SANTOS MACHADO", endereco: "Rua Itamarati de Minas, Nº 2961 - Neópolis", idade: 71, sexo: "F", nLesoes: "4", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "BIATAIN NÃO ADESIVO", "k2"], tipoFerida: "LT", condicao: "A"}, {nome: "BRUNO RANIERE MEDEIROS DE OLIVEIRA", endereco: "RUA ALGAROBAS, 1455 PITIMBÚ", idade: 21, sexo: "M", nLesoes: "2", curativosSemanais: "3", coberturas: ["ALEVYN", "ALGINATO", "CREME DE BARREIRA"], tipoFerida: "LT", condicao: "TT"}, {nome: "ARNOBIO FONSECA JUNIOR", endereco: "RUA RIO UMARÍ 7715 PITIMBÚ", idade: 52, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["ACQUACEL", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "PD", condicao: "TT"}, {nome: "ANTONIO LUIZ DA SILVA", endereco: "RUA FLOR DA SERRA 100 PITIMBÚ", idade: 64, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["ACQUACEL", "CREME DE BARREIRA"], tipoFerida: "LT", condicao: "TT"}, {nome: "ANTONIO SOARES DE ALMEIDA", endereco: "RUA MARANATA, 2005 PLANALTO", idade: 64, sexo: "M", nLesoes: "2", curativosSemanais: "3", coberturas: ["ALEVYN", "RAYON"], tipoFerida: "IC", condicao: "TT"}, {nome: "GENILDO MARCELINO DE MEDEIROS", endereco: "RUA Alto da Serra, 39 PITIMBÚ", idade: 63, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVA", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "LT", condicao: "TT"}, {nome: "INES OLIVEIRA DE ANDRADE", endereco: "RUA DAS TILIAS 2122 PITIMBÚ", idade: 75, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVA", "RAYON"], tipoFerida: "UV", condicao: "TT"}, {nome: "SONIA MARIA DOS SANTOS", endereco: "TRAVESSA DIOGO, 127 PLANALTO", idade: 59, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["ALEVYN"], tipoFerida: "IC", condicao: "TT"}, {nome: "TIAGO FERREIRA DA SILVA", endereco: "RUA SILVINO SERAFIM DE MEDEIROS, 196 CANDELÁRIA", idade: 41, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["BIATAIN ALGINATO", "CREME DE BARREIRA"], tipoFerida: "IC", condicao: "TT"}, {nome: "Rommel Gurgel da Cruz Correia", endereco: "Rua Serra do Caturité, 8055 PITIMBÚ", idade: 52, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["ALLEVYN", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "NOVO"}
+            { nome: "Angelita Macedo da Silva", nascimento: "1950-08-10", cartaoSus: "702807165400765", endereco: "Rua Inácio da Catingueira, Nº 3054- Lagoa Azul", sexo: "Feminino", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT" },
+            { nome: "Antonia Paula Regis da Silva Pimentel", nascimento: "1980-05-17", cartaoSus: "700608915405160", endereco: "Rua São Gregório, Nº 32 - Planalto", sexo: "Feminino", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL"], tipoFerida: "LT", condicao: "TT" },
+            { nome: "Antonio Marcelo dos Santos", nascimento: "1973-06-01", cartaoSus: "704706796598238", endereco: "Rua Rio Pardo, Nº 7695 - Pitimbú", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL"], tipoFerida: "LT", condicao: "TT" },
+            { nome: "Antonio Soares de Almeida", nascimento: "1960-10-24", cartaoSus: "706204550236665", endereco: "RUA MARANATA, 2005 PLANALTO", sexo: "Masculino", nLesoes: "2", curativosSemanais: "3", coberturas: ["ALLEVYN", "GAZE DE RAYON COM AGE"], tipoFerida: "IC", condicao: "TT" },
+            { nome: "Arnobio Fonseca Junior", nascimento: "1972-09-24", cartaoSus: "700202425370326", endereco: "RUA RIO UMARÍ 7715 PITIMBÚ", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "PD", condicao: "TT" },
+            { nome: "Bruno Raniere Medeiros de Oliveira", nascimento: "2003-09-23", cartaoSus: "", endereco: "RUA ALGAROBAS, 1455 PITIMBÚ", sexo: "Masculino", nLesoes: "2", curativosSemanais: "3", coberturas: ["ALLEVYN", "ALGINATO DE CÁLCIO", "CREME DE BARREIRA"], tipoFerida: "LT", condicao: "TT" },
+            { nome: "Edmilson Marcelino de Medeiros", nascimento: "1960-04-16", cartaoSus: "705000251367458", endereco: "Rua Porto Itapoana, Nº 96 - Pitimbú", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVO", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "UV", condicao: "TT" },
+            { nome: "Erivaldo Ferreira da Silva", nascimento: "1968-12-20", cartaoSus: "700300993902733", endereco: "RUA PEDRO TARGINO, 8, Planalto", sexo: "Masculino", nLesoes: "3", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT" },
+            { nome: "Esmeraldina Dantas Costa", nascimento: "1950-09-09", cartaoSus: "708708156806895", endereco: "Rua Pedro Américo, Nº 154 - Pitimbú", sexo: "Feminino", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "LT", condicao: "TT" },
+            { nome: "Francisco de Assis Damasceno", nascimento: "1960-01-20", cartaoSus: "704107445553750", endereco: "Rua da Aroeira, Nº 7694 - Pitimbú", sexo: "Masculino", nLesoes: "3", curativosSemanais: "3", coberturas: ["ALLEVYN", "CREME DE BARREIRA", "TERAPIA INELÁSTICA - BOTA DE UNA"], tipoFerida: "UV", condicao: "TT" },
+            { nome: "Genildo Marcelino de Medeiros", nascimento: "1961-07-03", cartaoSus: "704307561149195", endereco: "RUA Alto da Serra, 39 PITIMBÚ", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVO", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "LT", condicao: "TT" },
+            { nome: "Genilson Bezerra de Souza", nascimento: "1960-03-27", cartaoSus: "700103950582413", endereco: "R. Flávia Cristina Baracho, Nº 05 - Guarapes", sexo: "Masculino", nLesoes: "3", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "PD", condicao: "TT" },
+            { nome: "Geraldo Saturnino da Silva", nascimento: "1947-05-18", cartaoSus: "705205408864174", endereco: "Rua dos Cisnes, Nº 8001 - Pitimbú", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL", "HIDROGEL"], tipoFerida: "LT", condicao: "TT" },
+            { nome: "Gilmar Matias Santos", nascimento: "1986-09-07", cartaoSus: "700108830577190", endereco: "Rua da Figueira, Nº 7791 - Pitimbú", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "BIATAIN NÃO ADESIVO"], tipoFerida: "UV", condicao: "TT" },
+            { nome: "Ines Oliveira de Andrade", nascimento: "1950-06-02", cartaoSus: "700505797389959", endereco: "RUA DAS TILIAS 2122 PITIMBÚ", sexo: "Feminino", nLesoes: "1", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVO", "GAZE DE RAYON COM AGE"], tipoFerida: "UV", condicao: "TT" },
+            { nome: "Jose Oliveira de Andrade", nascimento: "1953-05-28", cartaoSus: "701209077237713", endereco: "Rua Jardim do Éden, 18, Planalto", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT" },
+            { nome: "Liliana Teixeira da Silva", nascimento: "1965-04-09", cartaoSus: "703209611777091", endereco: "Rua Catolé do Rocha, Nº 03 - Cidade da Esperança", sexo: "Feminino", nLesoes: "1", curativosSemanais: "3", coberturas: ["ALLEVYN", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT" },
+            { nome: "Lucimar Vieira da Silva", nascimento: "1953-02-16", cartaoSus: "700007893600408", endereco: "Rua Alfredo Pegado Cortez, Nº 3755 - Candelária", sexo: "Masculino", nLesoes: "2", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA", "ALLEVYN", "TERAPIA INELÁSTICA - BOTA DE UNA"], tipoFerida: "UV", condicao: "TT" },
+            { nome: "Maria de Fatima dos Santos Machado", nascimento: "1953-11-06", cartaoSus: "701205095551919", endereco: "Rua Itamarati de Minas, Nº 2961 - Neópolis", sexo: "Feminino", nLesoes: "4", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "BIATAIN NÃO ADESIVO", "TERAPIA INELÁSTICA - BOTA DE UNA"], tipoFerida: "LT", condicao: "A" },
+            { nome: "Robson Alves de Oliveira", nascimento: "1987-08-20", cartaoSus: "700802494900287", endereco: "Rua do Melro, Nº 8004 - Pitimbú", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA", "HIDROCOLOIDE - PLACA", "CARVÃO ATIVADO COM PRATA"], tipoFerida: "UV", condicao: "TT" },
+            { nome: "Rommel Gurgel da Cruz Correia", nascimento: "1972-11-11", cartaoSus: "700001360773503", endereco: "Rua Serra do Caturité, 8055 PITIMBÚ", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["ALLEVYN", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "N" },
+            { nome: "Sebastiao Crisostomo de Menezes Junior", nascimento: "1960-06-26", cartaoSus: "706700525261912", endereco: "Rua Mira Mangue, Nº 672 - Planalto", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL"], tipoFerida: "LT", condicao: "TT" },
+            { nome: "Sonia da Silva Menezes", nascimento: "1963-12-30", cartaoSus: "708105569909930", endereco: "RUA MARANATA, 11, Planalto", sexo: "Feminino", nLesoes: "3", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVO", "CREME DE BARREIRA", "TERAPIA INELÁSTICA - BOTA DE UNA"], tipoFerida: "UV", condicao: "TT" },
+            { nome: "Sonia Maria dos Santos", nascimento: "1965-07-30", cartaoSus: "700501360280057", endereco: "TRAVESSA DIOGO, 127 PLANALTO", sexo: "Feminino", nLesoes: "1", curativosSemanais: "3", coberturas: ["ALLEVYN"], tipoFerida: "IC", condicao: "TT" },
+            { nome: "Tiago Ferreira da Silva", nascimento: "1984-04-09", cartaoSus: "", endereco: "RUA SILVINO SERAFIM DE MEDEIROS, 196 CANDELÁRIA", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["ALGINATO DE CÁLCIO", "CREME DE BARREIRA"], tipoFerida: "IC", condicao: "TT" },
+            { nome: "DINALVA FERNANDES PESSOA", nascimento: "1938-01-01", cartaoSus: "", endereco: "RUA SUCATINGA, 35 PITIMBU", sexo: "Feminino", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "ALLEVYN"], tipoFerida: "LT", condicao: "TT" },
+            { nome: "MARIA OLIVEIRA DA COSTA", nascimento: "1957-01-01", cartaoSus: "", endereco: "Rua Itaguará, Nº 4735 - Neópolis", sexo: "Feminino", nLesoes: "2", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "HIDROGEL", "AQUACEL"], tipoFerida: "UV", condicao: "TT" },
+            { nome: "MARIA DE LOURDES GOMES DE ARAUJO", nascimento: "1946-01-01", cartaoSus: "", endereco: "Rua Serra do Japi, Nº 8017 - Pitimbú", sexo: "Feminino", nLesoes: "2", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "ALLEVYN", "POLIHEXAMETILENO DE BIGUANIDA (PHMB)"], tipoFerida: "LT", condicao: "TT" },
+            { nome: "ANTONIO LUIZ DA SILVA", nascimento: "1961-01-01", cartaoSus: "", endereco: "RUA FLOR DA SERRA 100 PITIMBÚ", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "LT", condicao: "TT" }
         ];
+
         return initialData.map((p, index) => {
-            const birthYear = new Date().getFullYear() - p.idade;
-            const condicaoRaw = p.condicao.trim().toUpperCase();
+            const condicaoRaw = (p.condicao || 'TT').trim().toUpperCase();
             return {
                 nome: p.nome.trim(),
                 endereco: p.endereco.trim(),
-                nascimento: `${birthYear}-01-01`,
-                sexo: p.sexo.toUpperCase() === 'F' ? 'Feminino' : 'Masculino',
-                cartaoSus: `GERADO-${String(index + 1).padStart(3, '0')}`,
+                nascimento: p.nascimento,
+                sexo: p.sexo,
+                cartaoSus: p.cartaoSus.trim(),
                 nLesoes: p.nLesoes,
                 curativosSemanais: p.curativosSemanais,
-                coberturaUtilizada: p.coberturas.map(normalizeCobertura),
+                coberturaUtilizada: p.coberturas,
                 tipoFerida: p.tipoFerida.trim().toUpperCase(),
                 condicaoAtual: condicaoRaw === 'NOVO' ? 'N' : condicaoRaw,
                 id: Date.now().toString() + index,
@@ -684,7 +701,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${patient.nome}</td>
                 <td>${calculateAge(patient.nascimento)} anos</td>
                 <td>${woundTypes[patient.tipoFerida] || 'N/A'}</td>
-                <td>${patient.cartaoSus || 'N/A'}</td>
+                <td>${patient.cartaoSus || 'Não informado'}</td>
                 <td class="text-center">
                     <button class="btn btn-info btn-sm" onclick="viewDetails('${patient.id}')">Ver Detalhes</button>
                     <button class="btn btn-warning btn-sm" onclick="editPatient('${patient.id}')">Editar</button>
@@ -712,8 +729,8 @@ document.addEventListener('DOMContentLoaded', function() {
             condicaoAtual: document.getElementById('condicaoAtual').value
         };
 
-        if (!patientData.nome || !patientData.nascimento || !patientData.cartaoSus) {
-            alert('Nome, Data de Nascimento e Cartão SUS são obrigatórios.');
+        if (!patientData.nome || !patientData.nascimento) {
+            alert('Nome e Data de Nascimento são obrigatórios.');
             return;
         }
 
@@ -735,8 +752,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('patientId').value = patient.id;
         document.getElementById('nome').value = patient.nome;
         document.getElementById('nascimento').value = patient.nascimento;
-        cartaoSusInput.value = patient.cartaoSus;
-        cartaoSusInput.disabled = false;
+        document.getElementById('cartaoSus').value = patient.cartaoSus;
         document.getElementById('sexo').value = patient.sexo;
         document.getElementById('endereco').value = patient.endereco;
         document.getElementById('nLesoes').value = patient.nLesoes;
@@ -870,7 +886,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     }
 
-    let printAction = { type: null }; // Objeto para guardar a ação de impressão
+    let printAction = { type: null };
 
     printPatientListBtn.addEventListener('click', () => {
         printAction.type = 'list';
@@ -963,6 +979,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <th>ORDEM</th>
                         <th>NOME</th>
                         <th>ENDEREÇO</th>
+                        <th>CNS</th>
                         <th>IDADE</th>
                         <th>SEXO</th>
                         <th>EQUIPE?</th>
@@ -978,7 +995,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
 
         if(patients.length === 0) {
-            reportHtml += '<tr><td colspan="12" style="text-align:center;">Nenhum paciente cadastrado.</td></tr>';
+            reportHtml += '<tr><td colspan="13" style="text-align:center;">Nenhum paciente cadastrado.</td></tr>';
         } else {
             const sortedPatients = [...patients].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
 
@@ -994,6 +1011,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td>${index + 1}</td>
                         <td>${patient.nome}</td>
                         <td>${patient.endereco || 'N/A'}</td>
+                        <td>${patient.cartaoSus || ''}</td>
                         <td>${idade}</td>
                         <td>${sexo}</td>
                         <td></td>
@@ -1029,7 +1047,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('patientForm').reset();
             document.getElementById('patientId').value = '';
             document.getElementById('patientModalLabel').innerText = 'Adicionar Novo Paciente';
-            cartaoSusInput.disabled = false;
+            document.getElementById('cartaoSus').disabled = false;
         }
     });
 
