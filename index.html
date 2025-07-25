@@ -139,7 +139,6 @@
     #atendimentoHistory th { background-color: #333; }
     #patientDetails p { margin-bottom: 0.5rem; }
 
-    /* --- ESTILO ALTERADO PARA OS BOTÕES --- */
     #printPatientListBtn, #logoutBtn {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
         border-radius: 12px;
@@ -170,6 +169,11 @@
     #print-report-area { display: none; }
     
     @media print {
+      @page {
+        size: landscape;
+        margin: 1cm;
+      }
+
       body > * {
         visibility: hidden;
       }
@@ -182,22 +186,55 @@
         left: 0;
         top: 0;
         width: 100%;
-        padding: 1cm;
         font-family: Arial, sans-serif;
         color: #000;
       }
       .print-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         text-align: center;
-        margin-bottom: 25px;
-        border-bottom: 2px solid #ccc;
-        padding-bottom: 15px;
+        margin-bottom: 15px;
       }
-      .print-header img { max-width: 180px; margin-bottom: 10px; }
-      .print-header h2 { font-size: 1.4rem; color: #000; margin: 0; }
-      .print-header p { font-size: 10pt; color: #555; margin-top: 5px; }
-      
+      .print-header img { 
+        max-width: 180px; 
+        margin-bottom: 10px; 
+      }
+      .print-main-title h4 {
+        font-size: 14pt;
+        font-weight: bold;
+        margin: 2px 0;
+        text-transform: uppercase;
+      }
+      .print-header hr {
+        width: 100%;
+        border-top: 2px solid #000;
+        margin: 10px 0;
+      }
+      .report-title {
+        font-size: 12pt;
+        font-weight: bold;
+        text-transform: uppercase;
+      }
+      .report-month {
+        font-size: 12pt;
+        font-weight: bold;
+        color: red;
+        text-transform: uppercase;
+      }
+      .print-meta-info {
+        width: 100%;
+        text-align: left;
+        font-size: 11pt;
+      }
+      .print-meta-info p {
+        margin: 2px 0;
+      }
+
       .print-patient-details {
-          margin-bottom: 20px;
+          margin-top: 15px;
+          border-top: 1px solid #ccc;
+          padding-top: 10px;
       }
       .print-patient-details p {
           font-size: 12pt;
@@ -205,17 +242,23 @@
       }
 
       table {
+        margin-top: 15px;
         width: 100%;
         border-collapse: collapse;
-        font-size: 9pt;
+        font-size: 8pt;
       }
       th, td {
         border: 1px solid #999;
-        padding: 5px;
+        padding: 4px;
         text-align: left;
         word-break: break-word;
       }
-      thead th { background-color: #E0E0E0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
+      thead th { 
+        background-color: #E0E0E0 !important; 
+        -webkit-print-color-adjust: exact; 
+        print-color-adjust: exact;
+        font-weight: bold;
+      }
       tfoot td { font-weight: bold; background-color: #f2f2f2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
     }
   </style>
@@ -240,7 +283,6 @@
         </form>
     </div>
 </div>
-
 
 <div id="app-container">
     <div class="top-right-controls">
@@ -281,13 +323,13 @@
         <div id="print-report-area"></div>
       </main>
     </div>
+    
+    <footer class="footer">
+      <div class="container">
+        <span>Desenvolvido por <a href="https://www.instagram.com/solutytecnologia/#" target="_blank">ANTONIEL SOUSA </a> &copy; 2025. Todos os direitos reservados.</span>
+      </div>
+    </footer>
 </div>
-
-<footer class="footer">
-  <div class="container">
-    <span>Desenvolvido por <a href="https://www.instagram.com/solutytecnologia/#" target="_blank">ANTONIEL SOUSA </a> &copy; 2025. Todos os direitos reservados.</span>
-  </div>
-</footer>
 
 <div class="modal fade" id="patientModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-lg" role="document">
@@ -410,6 +452,32 @@
   </div>
 </div>
 
+<div class="modal fade" id="nurseSelectionModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Selecionar Enfermeira Responsável</h5>
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <p>Por favor, selecione a enfermeira responsável pelo relatório:</p>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="nurseSelection" id="nurse1" value="nurse1" checked>
+            <label class="form-check-label" for="nurse1">Valéria Fernandes Pedro</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="nurseSelection" id="nurse2" value="nurse2">
+            <label class="form-check-label" for="nurse2">Maria Karolina Xavier Lopes</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="confirmPrintBtn">Confirmar e Imprimir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -431,6 +499,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const printPatientProfileBtn = document.getElementById('printPatientProfileBtn');
     const printPatientListBtn = document.getElementById('printPatientListBtn');
     const logoutBtn = document.getElementById('logoutBtn');
+    const confirmPrintBtn = document.getElementById('confirmPrintBtn');
 
     const woundTypes = {
       'IC': 'IC - Incisão Cirúrgica', 'LP': 'LP - Lesão por Pressão', 'Q': 'Q - Queimadura',
@@ -450,14 +519,13 @@ document.addEventListener('DOMContentLoaded', function() {
     ];
 
     const users = [
-        {
-            username: 'admin',
-            passwordHash: '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92'
-        },
-        {
-            username: 'enfermagem',
-            passwordHash: '07d394141c47c251a8412852631278287f311316518339b98a3e8a4a50a16827'
-        }
+        { username: 'admin', passwordHash: '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92' },
+        { username: 'enfermagem', passwordHash: '07d394141c47c251a8412852631278287f311316518339b98a3e8a4a50a16827' }
+    ];
+    
+    const nurses = [
+        { id: 'nurse1', fullName: 'VALÉRIA FERNANDES PEDRO - COREN/RN 517.700'},
+        { id: 'nurse2', fullName: 'MARIA KAROLINA XAVIER LOPES - COREN/RN 654.321'}
     ];
 
     async function sha256(string) {
@@ -490,9 +558,7 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         const username = document.getElementById('username').value.toLowerCase();
         const password = document.getElementById('password').value;
-        
         const foundUser = users.find(user => user.username === username);
-        
         if (foundUser) {
             const passwordHash = await sha256(password);
             if (passwordHash === foundUser.passwordHash) {
@@ -502,7 +568,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
         }
-        
         loginError.style.display = 'block';
     });
 
@@ -518,14 +583,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function initializeSystem() {
         let storedPatientsData = localStorage.getItem('curativosPacientes');
         let parsedPatients = storedPatientsData ? JSON.parse(storedPatientsData) : null;
-
         if (!parsedPatients || parsedPatients.length === 0) {
             patients = getInitialPatients();
             savePatients(); 
         } else {
             patients = parsedPatients;
         }
-        
         populateSelectWithOptions(tipoFeridaSelect, woundTypes);
         populateSelectWithOptions(condicaoAtualSelect, currentConditions);
         populateSelectWithArray(coberturaUtilizadaSelect, coberturaTypes);
@@ -547,43 +610,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (upperName === 'BIATAIN') return 'BIATAIN NÃO ADESIVO';
             return upperName;
         };
-
         const initialData = [
-            {nome: "DINALVA FERNANDES PESSOA", endereco: "RUA SUCATINGA, 35 PITIMBU", idade: 87, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "ALEVYM"], tipoFerida: "LT", condicao: "TT"},
-            {nome: "EDMILSON MARCELINO MEDEIROS", endereco: "Rua Porto Itapoana, Nº 96 - Pitimbú", idade: 64, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVA", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "UV", condicao: "TT"},
-            {nome: "FRANCISCO DE ASSIS DAMASCENO", endereco: "Rua da Aroeira, Nº 7694 - Pitimbú", idade: 61, sexo: "M", nLesoes: "3", curativosSemanais: "3", coberturas: ["ALLEVYN", "CREME DE BARREIRA", "K2"], tipoFerida: "UV", condicao: "TT"},
-            {nome: "GENILSON BEZERRA DE SOUZA", endereco: "R. Flávia Cristina Baracho, Nº 05 - Guarapes", idade: 63, sexo: "M", nLesoes: "3", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "PD", condicao: "TT"},
-            {nome: "ROBSON ALVES DE OLIVEIRA", endereco: "Rua do Melro, Nº 8004 - Pitimbú", idade: 36, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA", "HIDROCOLOIDE", "CARVÃO ATIVADO"], tipoFerida: "UV", condicao: "TT"},
-            {nome: "LUCIMAR VIEIRA DA SILVA", endereco: "Rua Alfredo Pegado Cortez, Nº 3755 - Candelária", idade: 71, sexo: "M", nLesoes: "2", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA", "ALEVYN", "K2"], tipoFerida: "UV", condicao: "TT"},
-            {nome: "ESMERALDINA DANTAS COSTA", endereco: "Rua Pedro Américo, Nº 154 - Pitimbú", idade: 73, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "LT", condicao: "TT"},
-            {nome: "LILIANA TEIXEIRA DA SILVA", endereco: "Rua Catolé do Rocha, Nº 03 - Cidade da Esperança", idade: 59, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["ALLEVYN", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT"},
-            {nome: "ERIVALDO FERREIRA DA SILVA", endereco: "RUA PEDRO TARGINO, 8, Planalto", idade: 55, sexo: "M", nLesoes: "3", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT"},
-            {nome: "SONIA DA SILVA MENEZES", endereco: "RUA MARANATA, 11, Planalto", idade: 60, sexo: "F", nLesoes: "3", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVA", "CREME DE BARREIRA", "K2"], tipoFerida: "UV", condicao: "TT"},
-            {nome: "JOSÉ OLIVEIRA DE ANDRADE", endereco: "Rua Jardim do Éden, 18, Planalto", idade: 71, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT"},
-            {nome: "ANGELITA MACEDO DA SILVA", endereco: "Rua Inácio da Catingueira, Nº 3054- Lagoa Azul", idade: 74, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT"},
-            {nome: "ANTONIO MARCELO DOS SANTOS", endereco: "Rua Rio Pardo, Nº 7695 - Pitimbú", idade: 51, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL"], tipoFerida: "LT", condicao: "TT"},
-            {nome: "GILMAR MATIAS SANTOS", endereco: "Rua da Figueira, Nº 7791 - Pitimbú", idade: 38, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "BIATAIN"], tipoFerida: "UV", condicao: "TT"},
-            {nome: "MARIA OLIVEIRA DA COSTA", endereco: "Rua Itaguará, Nº 4735 - Neópolis", idade: 68, sexo: "F", nLesoes: "2", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "HIDROGEL", "AQUACEL"], tipoFerida: "UV", condicao: "TT"},
-            {nome: "SEBASTIÃO CRISÓSTOMO DE MENEZES JUNIOR", endereco: "Rua Mira Mangue, Nº 672 - Planalto", idade: 64, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL"], tipoFerida: "LT", condicao: "TT"},
-            {nome: "ANTONIA PAULA REGIS DA SILVA PIMENTEL", endereco: "Rua São Gregório, Nº 32 - Planalto", idade: 44, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL"], tipoFerida: "LT", condicao: "TT"},
-            {nome: "MARIA DE LOURDES GOMES DE ARAUJO", endereco: "Rua Serra do Japi, Nº 8017 - Pitimbú", idade: 79, sexo: "F", nLesoes: "2", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "ALLEVYN", "PHMB"], tipoFerida: "LT", condicao: "TT"},
-            {nome: "GERALDO SATURNINO DA SILVA", endereco: "Rua dos Cisnes, Nº 8001 - Pitimbú", idade: 77, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL", "HIDROGEL"], tipoFerida: "LT", condicao: "TT"},
-            {nome: "MARIA DE FÁTIMA DOS SANTOS MACHADO", endereco: "Rua Itamarati de Minas, Nº 2961 - Neópolis", idade: 71, sexo: "F", nLesoes: "4", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "BIATAIN NÃO ADESIVO", "k2"], tipoFerida: "LT", condicao: "A"},
-            {nome: "BRUNO RANIERE MEDEIROS DE OLIVEIRA", endereco: "RUA ALGAROBAS, 1455 PITIMBÚ", idade: 21, sexo: "M", nLesoes: "2", curativosSemanais: "3", coberturas: ["ALEVYN", "ALGINATO", "CREME DE BARREIRA"], tipoFerida: "LT", condicao: "TT"},
-            {nome: "ARNOBIO FONSECA JUNIOR", endereco: "RUA RIO UMARÍ 7715 PITIMBÚ", idade: 52, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["ACQUACEL", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "PD", condicao: "TT"},
-            {nome: "ANTONIO LUIZ DA SILVA", endereco: "RUA FLOR DA SERRA 100 PITIMBÚ", idade: 64, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["ACQUACEL", "CREME DE BARREIRA"], tipoFerida: "LT", condicao: "TT"},
-            {nome: "ANTONIO SOARES DE ALMEIDA", endereco: "RUA MARANATA, 2005 PLANALTO", idade: 64, sexo: "M", nLesoes: "2", curativosSemanais: "3", coberturas: ["ALEVYN", "RAYON"], tipoFerida: "IC", condicao: "TT"},
-            {nome: "GENILDO MARCELINO DE MEDEIROS", endereco: "RUA Alto da Serra, 39 PITIMBÚ", idade: 63, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVA", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "LT", condicao: "TT"},
-            {nome: "INES OLIVEIRA DE ANDRADE", endereco: "RUA DAS TILIAS 2122 PITIMBÚ", idade: 75, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVA", "RAYON"], tipoFerida: "UV", condicao: "TT"},
-            {nome: "SONIA MARIA DOS SANTOS", endereco: "TRAVESSA DIOGO, 127 PLANALTO", idade: 59, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["ALEVYN"], tipoFerida: "IC", condicao: "TT"},
-            {nome: "TIAGO FERREIRA DA SILVA", endereco: "RUA SILVINO SERAFIM DE MEDEIROS, 196 CANDELÁRIA", idade: 41, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["BIATAIN ALGINATO", "CREME DE BARREIRA"], tipoFerida: "IC", condicao: "TT"},
-            {nome: "Rommel Gurgel da Cruz Correia", endereco: "Rua Serra do Caturité, 8055 PITIMBÚ", idade: 52, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["ALLEVYN", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "NOVO"}
+            {nome: "DINALVA FERNANDES PESSOA", endereco: "RUA SUCATINGA, 35 PITIMBU", idade: 87, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "ALEVYM"], tipoFerida: "LT", condicao: "TT"}, {nome: "EDMILSON MARCELINO MEDEIROS", endereco: "Rua Porto Itapoana, Nº 96 - Pitimbú", idade: 64, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVA", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "UV", condicao: "TT"}, {nome: "FRANCISCO DE ASSIS DAMASCENO", endereco: "Rua da Aroeira, Nº 7694 - Pitimbú", idade: 61, sexo: "M", nLesoes: "3", curativosSemanais: "3", coberturas: ["ALLEVYN", "CREME DE BARREIRA", "K2"], tipoFerida: "UV", condicao: "TT"}, {nome: "GENILSON BEZERRA DE SOUZA", endereco: "R. Flávia Cristina Baracho, Nº 05 - Guarapes", idade: 63, sexo: "M", nLesoes: "3", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "PD", condicao: "TT"}, {nome: "ROBSON ALVES DE OLIVEIRA", endereco: "Rua do Melro, Nº 8004 - Pitimbú", idade: 36, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA", "HIDROCOLOIDE", "CARVÃO ATIVADO"], tipoFerida: "UV", condicao: "TT"}, {nome: "LUCIMAR VIEIRA DA SILVA", endereco: "Rua Alfredo Pegado Cortez, Nº 3755 - Candelária", idade: 71, sexo: "M", nLesoes: "2", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA", "ALEVYN", "K2"], tipoFerida: "UV", condicao: "TT"}, {nome: "ESMERALDINA DANTAS COSTA", endereco: "Rua Pedro Américo, Nº 154 - Pitimbú", idade: 73, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "LT", condicao: "TT"}, {nome: "LILIANA TEIXEIRA DA SILVA", endereco: "Rua Catolé do Rocha, Nº 03 - Cidade da Esperança", idade: 59, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["ALLEVYN", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT"}, {nome: "ERIVALDO FERREIRA DA SILVA", endereco: "RUA PEDRO TARGINO, 8, Planalto", idade: 55, sexo: "M", nLesoes: "3", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT"}, {nome: "SONIA DA SILVA MENEZES", endereco: "RUA MARANATA, 11, Planalto", idade: 60, sexo: "F", nLesoes: "3", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVA", "CREME DE BARREIRA", "K2"], tipoFerida: "UV", condicao: "TT"}, {nome: "JOSÉ OLIVEIRA DE ANDRADE", endereco: "Rua Jardim do Éden, 18, Planalto", idade: 71, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT"}, {nome: "ANGELITA MACEDO DA SILVA", endereco: "Rua Inácio da Catingueira, Nº 3054- Lagoa Azul", idade: 74, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT"}, {nome: "ANTONIO MARCELO DOS SANTOS", endereco: "Rua Rio Pardo, Nº 7695 - Pitimbú", idade: 51, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL"], tipoFerida: "LT", condicao: "TT"}, {nome: "GILMAR MATIAS SANTOS", endereco: "Rua da Figueira, Nº 7791 - Pitimbú", idade: 38, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREira", "BIATAIN"], tipoFerida: "UV", condicao: "TT"}, {nome: "MARIA OLIVEIRA DA COSTA", endereco: "Rua Itaguará, Nº 4735 - Neópolis", idade: 68, sexo: "F", nLesoes: "2", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "HIDROGEL", "AQUACEL"], tipoFerida: "UV", condicao: "TT"}, {nome: "SEBASTIÃO CRISÓSTOMO DE MENEZES JUNIOR", endereco: "Rua Mira Mangue, Nº 672 - Planalto", idade: 64, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL"], tipoFerida: "LT", condicao: "TT"}, {nome: "ANTONIA PAULA REGIS DA SILVA PIMENTEL", endereco: "Rua São Gregório, Nº 32 - Planalto", idade: 44, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL"], tipoFerida: "LT", condicao: "TT"}, {nome: "MARIA DE LOURDES GOMES DE ARAUJO", endereco: "Rua Serra do Japi, Nº 8017 - Pitimbú", idade: 79, sexo: "F", nLesoes: "2", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "ALLEVYN", "PHMB"], tipoFerida: "LT", condicao: "TT"}, {nome: "GERALDO SATURNINO DA SILVA", endereco: "Rua dos Cisnes, Nº 8001 - Pitimbú", idade: 77, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL", "HIDROGEL"], tipoFerida: "LT", condicao: "TT"}, {nome: "MARIA DE FÁTIMA DOS SANTOS MACHADO", endereco: "Rua Itamarati de Minas, Nº 2961 - Neópolis", idade: 71, sexo: "F", nLesoes: "4", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "BIATAIN NÃO ADESIVO", "k2"], tipoFerida: "LT", condicao: "A"}, {nome: "BRUNO RANIERE MEDEIROS DE OLIVEIRA", endereco: "RUA ALGAROBAS, 1455 PITIMBÚ", idade: 21, sexo: "M", nLesoes: "2", curativosSemanais: "3", coberturas: ["ALEVYN", "ALGINATO", "CREME DE BARREIRA"], tipoFerida: "LT", condicao: "TT"}, {nome: "ARNOBIO FONSECA JUNIOR", endereco: "RUA RIO UMARÍ 7715 PITIMBÚ", idade: 52, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["ACQUACEL", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "PD", condicao: "TT"}, {nome: "ANTONIO LUIZ DA SILVA", endereco: "RUA FLOR DA SERRA 100 PITIMBÚ", idade: 64, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["ACQUACEL", "CREME DE BARREIRA"], tipoFerida: "LT", condicao: "TT"}, {nome: "ANTONIO SOARES DE ALMEIDA", endereco: "RUA MARANATA, 2005 PLANALTO", idade: 64, sexo: "M", nLesoes: "2", curativosSemanais: "3", coberturas: ["ALEVYN", "RAYON"], tipoFerida: "IC", condicao: "TT"}, {nome: "GENILDO MARCELINO DE MEDEIROS", endereco: "RUA Alto da Serra, 39 PITIMBÚ", idade: 63, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVA", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "LT", condicao: "TT"}, {nome: "INES OLIVEIRA DE ANDRADE", endereco: "RUA DAS TILIAS 2122 PITIMBÚ", idade: 75, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVA", "RAYON"], tipoFerida: "UV", condicao: "TT"}, {nome: "SONIA MARIA DOS SANTOS", endereco: "TRAVESSA DIOGO, 127 PLANALTO", idade: 59, sexo: "F", nLesoes: "1", curativosSemanais: "3", coberturas: ["ALEVYN"], tipoFerida: "IC", condicao: "TT"}, {nome: "TIAGO FERREIRA DA SILVA", endereco: "RUA SILVINO SERAFIM DE MEDEIROS, 196 CANDELÁRIA", idade: 41, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["BIATAIN ALGINATO", "CREME DE BARREIRA"], tipoFerida: "IC", condicao: "TT"}, {nome: "Rommel Gurgel da Cruz Correia", endereco: "Rua Serra do Caturité, 8055 PITIMBÚ", idade: 52, sexo: "M", nLesoes: "1", curativosSemanais: "3", coberturas: ["ALLEVYN", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "NOVO"}
         ];
-        
         return initialData.map((p, index) => {
             const birthYear = new Date().getFullYear() - p.idade;
             const condicaoRaw = p.condicao.trim().toUpperCase();
-
             return {
                 nome: p.nome.trim(),
                 endereco: p.endereco.trim(),
@@ -810,34 +842,81 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
     
-    function printPatientProfile() {
+    function generatePrintHeaderHTML(nurseName) {
+        const now = new Date();
+        const months = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
+        const monthYear = `${months[now.getMonth()]}/${now.getFullYear()}`;
+        const fullDate = now.toLocaleDateString('pt-BR');
+
+        return `
+            <div class="print-header">
+                <img src="https://www.natal.rn.gov.br/sme/matriculaonline/img/logo_natal_ws.png" alt="Logomarca da Prefeitura de Natal">
+                <div class="print-main-title">
+                    <h4>PREFEITURA MUNICIPAL DE NATAL</h4>
+                    <h4>SECRETARIA MUNICIPAL DE SAÚDE</h4>
+                    <h4>DEPARTAMENTO DE ATENÇÃO BÁSICA</h4>
+                </div>
+                <hr>
+                <p class="report-title">PLANILHA MENSAL DE ACOMPANHAMENTO DOS USUÁRIOS PORTADORES DE FERIDAS - SERVIÇO DE SAÚDE DAB</p>
+                <p class="report-month">${monthYear}</p>
+                <hr>
+                <div class="print-meta-info">
+                    <p><strong>DISTRITO:</strong> SUL</p>
+                    <p><strong>UNIDADE:</strong> UBS SATÉLITE</p>
+                    <p><strong>ENFERMEIRA:</strong> ${nurseName}</p>
+                    <p><strong>DATA:</strong> ${fullDate}</p>
+                </div>
+            </div>
+        `;
+    }
+
+    let printAction = { type: null }; // Objeto para guardar a ação de impressão
+
+    printPatientListBtn.addEventListener('click', () => {
+        printAction.type = 'list';
+        $('#nurseSelectionModal').modal('show');
+    });
+
+    printPatientProfileBtn.addEventListener('click', () => {
+        printAction.type = 'profile';
+        $('#nurseSelectionModal').modal('show');
+    });
+    
+    confirmPrintBtn.addEventListener('click', () => {
+        const selectedNurseId = document.querySelector('input[name="nurseSelection"]:checked').value;
+        const selectedNurse = nurses.find(n => n.id === selectedNurseId);
+        
+        if (printAction.type === 'list') {
+            executePrintPatientList(selectedNurse.fullName);
+        } else if (printAction.type === 'profile') {
+            executePrintPatientProfile(selectedNurse.fullName);
+        }
+        $('#nurseSelectionModal').modal('hide');
+    });
+
+    function executePrintPatientProfile(nurseName) {
         const reportArea = document.getElementById('print-report-area');
         const patientId = document.getElementById('atendimentoPatientId').value;
         const patient = patients.find(p => p.id === patientId);
 
-        if (!patient) {
-            alert('Paciente não encontrado para impressão.');
-            return;
-        }
+        if (!patient) { return; }
 
         const coberturasStr = (patient.coberturaUtilizada && patient.coberturaUtilizada.length > 0) 
             ? patient.coberturaUtilizada.join(', ') 
             : 'Não informado';
 
-        let reportHtml = `
-            <div class="print-header">
-                <img src="https://www.natal.rn.gov.br/sme/matriculaonline/img/logo_natal_ws.png" alt="Logomarca da Prefeitura de Natal">
-                <h2>Prontuário do Paciente</h2>
-            </div>
+        let reportHtml = generatePrintHeaderHTML(nurseName);
+        reportHtml += `
             <div class="print-patient-details">
+                <h3>Dados do Paciente</h3>
                 <p><strong>Nome:</strong> ${patient.nome}</p>
                 <p><strong>Cartão SUS:</strong> ${patient.cartaoSus || 'Não informado'}</p>
                 <p><strong>Data de Nasc.:</strong> ${new Date(patient.nascimento).toLocaleDateString('pt-BR', {timeZone: 'UTC'})} (${calculateAge(patient.nascimento)} anos)</p>
                 <p><strong>Endereço:</strong> ${patient.endereco || 'Não informado'}</p>
                 <p><strong>Tipo de Ferida:</strong> ${woundTypes[patient.tipoFerida] || 'Não informado'}</p>
+                <p><strong>Condição Atual:</strong> ${currentConditions[patient.condicaoAtual] || 'Não informada'}</p>
                 <p><strong>Cobertura(s) Utilizada(s):</strong> ${coberturasStr}</p>
             </div>
-            <hr>
             <h3>Histórico de Atendimentos</h3>
             <table>
                 <thead>
@@ -874,47 +953,56 @@ document.addEventListener('DOMContentLoaded', function() {
         window.print();
     }
 
-    function printPatientList() {
+    function executePrintPatientList(nurseName) {
         const reportArea = document.getElementById('print-report-area');
-        let reportHtml = `
-            <div class="print-header">
-                <img src="https://www.natal.rn.gov.br/sme/matriculaonline/img/logo_natal_ws.png" alt="Logomarca da Prefeitura de Natal">
-                <h2>Lista Geral de Pacientes</h2>
-                <p>Relatório gerado em: ${new Date().toLocaleString('pt-BR')}</p>
-            </div>
+        let reportHtml = generatePrintHeaderHTML(nurseName); 
+        reportHtml += `
             <table>
                 <thead>
                     <tr>
-                        <th>Nome</th>
-                        <th>Idade</th>
-                        <th>Cartão SUS</th>
-                        <th>Tipo de Ferida</th>
-                        <th>Cobertura(s)</th>
-                        <th>Cur./Semana</th>
+                        <th>ORDEM</th>
+                        <th>NOME</th>
+                        <th>ENDEREÇO</th>
+                        <th>IDADE</th>
+                        <th>SEXO</th>
+                        <th>EQUIPE?</th>
+                        <th>CURATIVO</th>
+                        <th>Nº DE LESÕES</th>
+                        <th>Nº DE CURATIVOS SEMANAIS</th>
+                        <th>COBERTURAS UTILIZADAS</th>
+                        <th>TIPOS DE FERIDAS</th>
+                        <th>CONDIÇÃO ATUAL</th>
                     </tr>
                 </thead>
                 <tbody>
         `;
 
         if(patients.length === 0) {
-            reportHtml += '<tr><td colspan="6" style="text-align:center;">Nenhum paciente cadastrado.</td></tr>';
+            reportHtml += '<tr><td colspan="12" style="text-align:center;">Nenhum paciente cadastrado.</td></tr>';
         } else {
             const sortedPatients = [...patients].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
 
-            sortedPatients.forEach(patient => {
+            sortedPatients.forEach((patient, index) => {
                 const idade = calculateAge(patient.nascimento);
-                const tipoFerida = woundTypes[patient.tipoFerida] || 'Não informado';
-                const coberturas = (patient.coberturaUtilizada && patient.coberturaUtilizada.length > 0) ? patient.coberturaUtilizada.join(', ') : 'N/A';
-                const semanais = patient.curativosSemanais || 'N/A';
-                
+                const sexo = patient.sexo ? patient.sexo.charAt(0) : 'N/A';
+                const tipoFerida = patient.tipoFerida || 'N/A';
+                const condicaoAtual = patient.condicaoAtual || 'N/A';
+                const coberturas = (patient.coberturaUtilizada && patient.coberturaUtilizada.length > 0) ? patient.coberturaUtilizada.join(' + ') : 'N/A';
+
                 reportHtml += `
                     <tr>
+                        <td>${index + 1}</td>
                         <td>${patient.nome}</td>
+                        <td>${patient.endereco || 'N/A'}</td>
                         <td>${idade}</td>
-                        <td>${patient.cartaoSus || 'N/A'}</td>
-                        <td>${tipoFerida}</td>
+                        <td>${sexo}</td>
+                        <td></td>
+                        <td>${patient.nLesoes > 0 ? 'X' : ''}</td>
+                        <td>${patient.nLesoes}</td>
+                        <td>${patient.curativosSemanais}</td>
                         <td>${coberturas}</td>
-                        <td>${semanais}</td>
+                        <td>${tipoFerida}</td>
+                        <td>${condicaoAtual}</td>
                     </tr>
                 `;
             });
@@ -929,8 +1017,6 @@ document.addEventListener('DOMContentLoaded', function() {
         window.print();
     }
     
-    printPatientProfileBtn.addEventListener('click', printPatientProfile);
-    printPatientListBtn.addEventListener('click', printPatientList); 
     logoutBtn.addEventListener('click', logout);
 
     searchInput.addEventListener('input', (e) => {
