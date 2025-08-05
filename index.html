@@ -28,7 +28,7 @@
       100% { background-position: 0% 50%; }
     }
     
-    #login-overlay {
+    #login-overlay, #loading-overlay {
         position: fixed;
         top: 0;
         left: 0;
@@ -41,6 +41,7 @@
         justify-content: center;
         align-items: center;
         z-index: 2000;
+        color: white;
     }
     #login-box {
         background: var(--dark-bg);
@@ -57,12 +58,17 @@
         margin-top: 15px;
         text-align: center;
     }
+    #loading-overlay {
+        display: none;
+        flex-direction: column;
+    }
 
     #app-container {
         display: none;
     }
     
-    .role-enfermagem .delete-btn {
+    .role-enfermagem .delete-btn,
+    .role-enfermagem .admin-only-feature {
         display: none !important;
     }
 
@@ -70,6 +76,15 @@
         position: fixed;
         top: 20px;
         right: 20px;
+        z-index: 1000;
+        display: flex;
+        gap: 10px;
+    }
+
+    .top-left-controls {
+        position: fixed;
+        top: 20px;
+        left: 20px;
         z-index: 1000;
         display: flex;
         gap: 10px;
@@ -139,7 +154,7 @@
     #atendimentoHistory th { background-color: #333; }
     #patientDetails p { margin-bottom: 0.5rem; }
 
-    #printPatientListBtn, #logoutBtn {
+    #printPatientListBtn, #logoutBtn, #exportExcelBtn, #backupBtn, #restoreBtn {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
         border-radius: 12px;
         padding: 14px 24px;
@@ -165,6 +180,15 @@
         background-color: #ffffff;
         color: #000000;
     }
+    #exportExcelBtn {
+        background-color: #1D6F42;
+        color: #ffffff;
+        border-color: #ffffff;
+    }
+    #exportExcelBtn:hover {
+        background-color: #155734;
+        border-color: #f0f0f0;
+    }
     
     #print-report-area { display: none; }
     
@@ -172,6 +196,15 @@
       @page {
         size: landscape;
         margin: 1cm;
+      }
+      body.print-portrait-mode {
+          --page-orientation: portrait;
+      }
+      body.print-landscape-mode {
+          --page-orientation: landscape;
+      }
+      @page {
+          size: var(--page-orientation, landscape);
       }
 
       body > * {
@@ -287,10 +320,19 @@
     </div>
 </div>
 
+<div id="loading-overlay">
+    <h4>Carregando dados...</h4>
+</div>
+
 <div id="app-container">
+    <div class="top-left-controls">
+        <button id="backupBtn" class="btn btn-info admin-only-feature">Salvar Backup</button>
+        <input type="file" id="restoreInput" accept=".json" style="display: none;">
+        <button id="restoreBtn" class="btn btn-warning">Carregar Backup</button>
+    </div>
     <div class="top-right-controls">
-        <button id="logoutBtn">Sair</button>
         <button id="printPatientListBtn">Imprimir Lista</button>
+        <button id="logoutBtn">Sair</button>
     </div>
 
     <div class="container mt-4">
@@ -490,6 +532,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('login-form');
     const loginError = document.getElementById('login-error');
     const appContainer = document.getElementById('app-container');
+    const loadingOverlay = document.getElementById('loading-overlay');
 
     const patientTableBody = document.getElementById('patientTableBody');
     const searchInput = document.getElementById('searchInput');
@@ -503,6 +546,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const printPatientListBtn = document.getElementById('printPatientListBtn');
     const logoutBtn = document.getElementById('logoutBtn');
     const confirmPrintBtn = document.getElementById('confirmPrintBtn');
+    const backupBtn = document.getElementById('backupBtn');
+    const restoreBtn = document.getElementById('restoreBtn');
+    const restoreInput = document.getElementById('restoreInput');
 
     const woundTypes = {
       'IC': 'IC - Incisão Cirúrgica', 'LP': 'LP - Lesão por Pressão', 'Q': 'Q - Queimadura',
@@ -522,8 +568,8 @@ document.addEventListener('DOMContentLoaded', function() {
     ];
 
     const users = [
-        { username: 'admin', passwordHash: '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92' },
-        { username: 'enfermagem', passwordHash: '07d394141c47c251a8412852631278287f311316518339b98a3e8a4a50a16827' }
+        { username: 'admin', passwordHash: '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918' },
+        { username: 'enfermagem', passwordHash: '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92' }
     ];
     
     const nurses = [
@@ -585,71 +631,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function initializeSystem() {
         let storedPatientsData = localStorage.getItem('curativosPacientes');
-        let parsedPatients = storedPatientsData ? JSON.parse(storedPatientsData) : null;
-        if (!parsedPatients || parsedPatients.length === 0) {
-            patients = getInitialPatients();
-            savePatients(); 
-        } else {
-            patients = parsedPatients;
-        }
+        let parsedPatients = storedPatientsData ? JSON.parse(storedPatientsData) : [];
+        patients = parsedPatients;
+        
         populateSelectWithOptions(tipoFeridaSelect, woundTypes);
         populateSelectWithOptions(condicaoAtualSelect, currentConditions);
         populateSelectWithArray(coberturaUtilizadaSelect, coberturaTypes);
         renderPatientTable();
     }
     
-    function getInitialPatients() {
-        const initialData = [
-            { nome: "Angelita Macedo da Silva", nascimento: "1950-08-10", cartaoSus: "702807165400765", endereco: "Rua Inácio da Catingueira, Nº 3054- Lagoa Azul", sexo: "Feminino", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT" },
-            { nome: "Antonia Paula Regis da Silva Pimentel", nascimento: "1980-05-17", cartaoSus: "700608915405160", endereco: "Rua São Gregório, Nº 32 - Planalto", sexo: "Feminino", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL"], tipoFerida: "LT", condicao: "TT" },
-            { nome: "Antonio Marcelo dos Santos", nascimento: "1973-06-01", cartaoSus: "704706796598238", endereco: "Rua Rio Pardo, Nº 7695 - Pitimbú", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL"], tipoFerida: "LT", condicao: "TT" },
-            { nome: "Antonio Soares de Almeida", nascimento: "1960-10-24", cartaoSus: "706204550236665", endereco: "RUA MARANATA, 2005 PLANALTO", sexo: "Masculino", nLesoes: "2", curativosSemanais: "3", coberturas: ["ALLEVYN", "GAZE DE RAYON COM AGE"], tipoFerida: "IC", condicao: "TT" },
-            { nome: "Arnobio Fonseca Junior", nascimento: "1972-09-24", cartaoSus: "700202425370326", endereco: "RUA RIO UMARÍ 7715 PITIMBÚ", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "PD", condicao: "TT" },
-            { nome: "Bruno Raniere Medeiros de Oliveira", nascimento: "2003-09-23", cartaoSus: "", endereco: "RUA ALGAROBAS, 1455 PITIMBÚ", sexo: "Masculino", nLesoes: "2", curativosSemanais: "3", coberturas: ["ALLEVYN", "ALGINATO DE CÁLCIO", "CREME DE BARREIRA"], tipoFerida: "LT", condicao: "TT" },
-            { nome: "Edmilson Marcelino de Medeiros", nascimento: "1960-04-16", cartaoSus: "705000251367458", endereco: "Rua Porto Itapoana, Nº 96 - Pitimbú", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVO", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "UV", condicao: "TT" },
-            { nome: "Erivaldo Ferreira da Silva", nascimento: "1968-12-20", cartaoSus: "700300993902733", endereco: "RUA PEDRO TARGINO, 8, Planalto", sexo: "Masculino", nLesoes: "3", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT" },
-            { nome: "Esmeraldina Dantas Costa", nascimento: "1950-09-09", cartaoSus: "708708156806895", endereco: "Rua Pedro Américo, Nº 154 - Pitimbú", sexo: "Feminino", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "LT", condicao: "TT" },
-            { nome: "Francisco de Assis Damasceno", nascimento: "1960-01-20", cartaoSus: "704107445553750", endereco: "Rua da Aroeira, Nº 7694 - Pitimbú", sexo: "Masculino", nLesoes: "3", curativosSemanais: "3", coberturas: ["ALLEVYN", "CREME DE BARREIRA", "TERAPIA INELÁSTICA - BOTA DE UNA"], tipoFerida: "UV", condicao: "TT" },
-            { nome: "Genildo Marcelino de Medeiros", nascimento: "1961-07-03", cartaoSus: "704307561149195", endereco: "RUA Alto da Serra, 39 PITIMBÚ", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVO", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "LT", condicao: "TT" },
-            { nome: "Genilson Bezerra de Souza", nascimento: "1960-03-27", cartaoSus: "700103950582413", endereco: "R. Flávia Cristina Baracho, Nº 05 - Guarapes", sexo: "Masculino", nLesoes: "3", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA", "HIDROGEL"], tipoFerida: "PD", condicao: "TT" },
-            { nome: "Geraldo Saturnino da Silva", nascimento: "1947-05-18", cartaoSus: "705205408864174", endereco: "Rua dos Cisnes, Nº 8001 - Pitimbú", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL", "HIDROGEL"], tipoFerida: "LT", condicao: "TT" },
-            { nome: "Gilmar Matias Santos", nascimento: "1986-09-07", cartaoSus: "700108830577190", endereco: "Rua da Figueira, Nº 7791 - Pitimbú", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "BIATAIN NÃO ADESIVO"], tipoFerida: "UV", condicao: "TT" },
-            { nome: "Ines Oliveira de Andrade", nascimento: "1950-06-02", cartaoSus: "700505797389959", endereco: "RUA DAS TILIAS 2122 PITIMBÚ", sexo: "Feminino", nLesoes: "1", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVO", "GAZE DE RAYON COM AGE"], tipoFerida: "UV", condicao: "TT" },
-            { nome: "Jose Oliveira de Andrade", nascimento: "1953-05-28", cartaoSus: "701209077237713", endereco: "Rua Jardim do Éden, 18, Planalto", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT" },
-            { nome: "Liliana Teixeira da Silva", nascimento: "1965-04-09", cartaoSus: "703209611777091", endereco: "Rua Catolé do Rocha, Nº 03 - Cidade da Esperança", sexo: "Feminino", nLesoes: "1", curativosSemanais: "3", coberturas: ["ALLEVYN", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "TT" },
-            { nome: "Lucimar Vieira da Silva", nascimento: "1953-02-16", cartaoSus: "700007893600408", endereco: "Rua Alfredo Pegado Cortez, Nº 3755 - Candelária", sexo: "Masculino", nLesoes: "2", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA", "ALLEVYN", "TERAPIA INELÁSTICA - BOTA DE UNA"], tipoFerida: "UV", condicao: "TT" },
-            { nome: "Maria de Fatima dos Santos Machado", nascimento: "1953-11-06", cartaoSus: "701205095551919", endereco: "Rua Itamarati de Minas, Nº 2961 - Neópolis", sexo: "Feminino", nLesoes: "4", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "BIATAIN NÃO ADESIVO", "TERAPIA INELÁSTICA - BOTA DE UNA"], tipoFerida: "LT", condicao: "A" },
-            { nome: "Robson Alves de Oliveira", nascimento: "1987-08-20", cartaoSus: "700802494900287", endereco: "Rua do Melro, Nº 8004 - Pitimbú", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA", "HIDROCOLOIDE - PLACA", "CARVÃO ATIVADO COM PRATA"], tipoFerida: "UV", condicao: "TT" },
-            { nome: "Rommel Gurgel da Cruz Correia", nascimento: "1972-11-11", cartaoSus: "700001360773503", endereco: "Rua Serra do Caturité, 8055 PITIMBÚ", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["ALLEVYN", "CREME DE BARREIRA"], tipoFerida: "UV", condicao: "N" },
-            { nome: "Sebastiao Crisostomo de Menezes Junior", nascimento: "1960-06-26", cartaoSus: "706700525261912", endereco: "Rua Mira Mangue, Nº 672 - Planalto", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "AQUACEL"], tipoFerida: "LT", condicao: "TT" },
-            { nome: "Sonia da Silva Menezes", nascimento: "1963-12-30", cartaoSus: "708105569909930", endereco: "RUA MARANATA, 11, Planalto", sexo: "Feminino", nLesoes: "3", curativosSemanais: "3", coberturas: ["BIATAIN NÃO ADESIVO", "CREME DE BARREIRA", "TERAPIA INELÁSTICA - BOTA DE UNA"], tipoFerida: "UV", condicao: "TT" },
-            { nome: "Sonia Maria dos Santos", nascimento: "1965-07-30", cartaoSus: "700501360280057", endereco: "TRAVESSA DIOGO, 127 PLANALTO", sexo: "Feminino", nLesoes: "1", curativosSemanais: "3", coberturas: ["ALLEVYN"], tipoFerida: "IC", condicao: "TT" },
-            { nome: "Tiago Ferreira da Silva", nascimento: "1984-04-09", cartaoSus: "", endereco: "RUA SILVINO SERAFIM DE MEDEIROS, 196 CANDELÁRIA", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["ALGINATO DE CÁLCIO", "CREME DE BARREIRA"], tipoFerida: "IC", condicao: "TT" },
-            { nome: "DINALVA FERNANDES PESSOA", nascimento: "1938-01-01", cartaoSus: "", endereco: "RUA SUCATINGA, 35 PITIMBU", sexo: "Feminino", nLesoes: "1", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "ALLEVYN"], tipoFerida: "LT", condicao: "TT" },
-            { nome: "MARIA OLIVEIRA DA COSTA", nascimento: "1957-01-01", cartaoSus: "", endereco: "Rua Itaguará, Nº 4735 - Neópolis", sexo: "Feminino", nLesoes: "2", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "HIDROGEL", "AQUACEL"], tipoFerida: "UV", condicao: "TT" },
-            { nome: "MARIA DE LOURDES GOMES DE ARAUJO", nascimento: "1946-01-01", cartaoSus: "", endereco: "Rua Serra do Japi, Nº 8017 - Pitimbú", sexo: "Feminino", nLesoes: "2", curativosSemanais: "3", coberturas: ["CREME DE BARREIRA", "ALLEVYN", "POLIHEXAMETILENO DE BIGUANIDA (PHMB)"], tipoFerida: "LT", condicao: "TT" },
-            { nome: "ANTONIO LUIZ DA SILVA", nascimento: "1961-01-01", cartaoSus: "", endereco: "RUA FLOR DA SERRA 100 PITIMBÚ", sexo: "Masculino", nLesoes: "1", curativosSemanais: "3", coberturas: ["AQUACEL", "CREME DE BARREIRA"], tipoFerida: "LT", condicao: "TT" }
-        ];
-
-        return initialData.map((p, index) => {
-            const condicaoRaw = (p.condicao || 'TT').trim().toUpperCase();
-            return {
-                nome: p.nome.trim(),
-                endereco: p.endereco.trim(),
-                nascimento: p.nascimento,
-                sexo: p.sexo,
-                cartaoSus: p.cartaoSus.trim(),
-                nLesoes: p.nLesoes,
-                curativosSemanais: p.curativosSemanais,
-                coberturaUtilizada: p.coberturas,
-                tipoFerida: p.tipoFerida.trim().toUpperCase(),
-                condicaoAtual: condicaoRaw === 'NOVO' ? 'N' : condicaoRaw,
-                id: Date.now().toString() + index,
-                atendimentos: []
-            };
-        });
-    }
-
     function populateSelectWithOptions(selectElement, options) {
         selectElement.innerHTML = '<option value="">Selecione...</option>';
         for (const [key, value] of Object.entries(options)) {
@@ -886,15 +876,15 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     }
 
-    let printAction = { type: null };
+    let printAction = { callback: null };
 
     printPatientListBtn.addEventListener('click', () => {
-        printAction.type = 'list';
+        printAction.callback = executePrintPatientList;
         $('#nurseSelectionModal').modal('show');
     });
 
     printPatientProfileBtn.addEventListener('click', () => {
-        printAction.type = 'profile';
+        printAction.callback = executePrintPatientProfile;
         $('#nurseSelectionModal').modal('show');
     });
     
@@ -902,10 +892,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectedNurseId = document.querySelector('input[name="nurseSelection"]:checked').value;
         const selectedNurse = nurses.find(n => n.id === selectedNurseId);
         
-        if (printAction.type === 'list') {
-            executePrintPatientList(selectedNurse.fullName);
-        } else if (printAction.type === 'profile') {
-            executePrintPatientProfile(selectedNurse.fullName);
+        if (typeof printAction.callback === 'function') {
+            printAction.callback(selectedNurse.fullName);
         }
         $('#nurseSelectionModal').modal('hide');
     });
@@ -1035,6 +1023,57 @@ document.addEventListener('DOMContentLoaded', function() {
         window.print();
     }
     
+    backupBtn.addEventListener('click', () => {
+        if (patients.length === 0) {
+            alert("Não há dados para salvar.");
+            return;
+        }
+
+        const dataStr = JSON.stringify(patients, null, 2);
+        const blob = new Blob([dataStr], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        const today = new Date().toISOString().split('T')[0];
+        link.download = `backup_curativos_${today}.json`;
+        link.href = url;
+        link.click();
+        URL.revokeObjectURL(url);
+    });
+
+    restoreBtn.addEventListener('click', () => {
+        restoreInput.click();
+    });
+
+    restoreInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) {
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                if (!Array.isArray(importedData)) {
+                    throw new Error("O arquivo não contém uma lista de dados válida.");
+                }
+
+                if (confirm("Isso irá substituir todos os dados de pacientes atuais pelos dados do arquivo. Deseja continuar?")) {
+                    patients = importedData;
+                    savePatients();
+                    renderPatientTable();
+                    alert("Backup carregado com sucesso!");
+                }
+            } catch (error) {
+                alert("Erro ao carregar o arquivo. Verifique se o arquivo é um backup válido.\n\nDetalhes: " + error.message);
+            } finally {
+                restoreInput.value = '';
+            }
+        };
+        reader.readAsText(file);
+    });
+
     logoutBtn.addEventListener('click', logout);
 
     searchInput.addEventListener('input', (e) => {
