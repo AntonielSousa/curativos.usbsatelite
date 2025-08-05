@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Controle de Farmácia | UBS SATÉLITE</title>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --primary-color: #386bf7;
+      --dark-bg: #1e1e1e;
+      --light-bg: #2c2c2c;
+      --text-color: #ffffff;
+      --text-muted: #ccc;
+    }
+    body {
+      margin: 0;
+      padding-bottom: 80px;
+      font-family: 'Montserrat', Arial, sans-serif;
+      background: linear-gradient(-45deg, #1e1e1e, #2a005f, #1f0033, #000000);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      color: var(--text-color);
+    }
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    #login-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+    }
+    #login-box {
+        background: var(--dark-bg);
+        padding: 40px;
+        border-radius: 15px;
+        border: 1px solid var(--primary-color);
+        width: 100%;
+        max-width: 400px;
+        box-shadow: 0 10px 30px rgba(56, 107, 247, 0.2);
+    }
+    #login-error {
+        display: none;
+        color: #ff5252;
+        margin-top: 15px;
+        text-align: center;
+    }
+
+    #app-container {
+        display: none;
+    }
+    
+    .role-enfermagem .delete-btn {
+        display: none !important;
+    }
+
+    .header { padding: 40px 0 20px; }
+    .logo { width: 150px; }
+    .footer {
+      position: fixed; bottom: 0; width: 100%;
+      background-color: #212121; color: var(--text-muted);
+      padding: 10px 0; text-align: center; font-size: 14px;
+      z-index: 1500;
+    }
+    .footer a { color: var(--primary-color); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+
+    .controls-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        gap: 1rem;
+    }
+    .form-control, .custom-select {
+      background-color: var(--light-bg); color: var(--text-color);
+      border: 1px solid #444; border-radius: 8px;
+    }
+    .form-control:disabled {
+        background-color: #3a3a3a;
+        opacity: 0.7;
+    }
+    .form-control:focus, .custom-select:focus {
+      background-color: var(--light-bg); color: var(--text-color);
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.2rem rgba(56, 107, 247, 0.25);
+    }
+    .table-responsive {
+        background-color: rgba(30,30,30,0.8);
+        border-radius: 10px;
+    }
+    .table thead th {
+        background-color: var(--primary-color);
+        color: var(--text-color);
+        border-bottom: 0;
+    }
+    .table td, .table th {
+        border-top: 1px solid #444;
+        vertical-align: middle;
+    }
+    .table-hover tbody tr:hover {
+        background-color: rgba(56, 107, 247, 0.2);
+        color: var(--text-color);
+    }
+    .modal-content {
+        background-color: var(--dark-bg);
+        border: 1px solid var(--primary-color);
+        border-radius: 12px;
+    }
+    .modal-header, .modal-footer {
+        border-color: #444;
+    }
+    .close { color: var(--text-color); }
+  </style>
+</head>
+<body>
+
+<div id="login-overlay">
+    <div id="login-box">
+        <h3 class="text-center mb-3">Controle de Farmácia</h3>
+        <p class="text-center text-muted small mb-4">UBS Cidade Satélite</p>
+        <form id="login-form">
+            <div class="form-group">
+                <label for="username">Usuário</label>
+                <input type="text" id="username" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block mt-4">Entrar</button>
+            <p id="login-error">Usuário ou senha inválidos.</p>
+        </form>
+    </div>
+</div>
+
+<div id="app-container">
+    <div class="container mt-4">
+      <header class="header text-center">
+        <img src="https://www.natal.rn.gov.br/sme/matriculaonline/img/logo_natal_ws.png" alt="Logomarca da Prefeitura de Natal" class="logo">
+        <h1 class="mt-3">CONTROLE DE AMOSTRAS GRÁTIS</h1>
+        <p class="lead text-muted">Gerenciamento de Estoque da Farmácia</p>
+      </header>
+    
+      <main>
+        <div class="controls-container">
+            <div>
+                <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#medicationModal">
+                    + Adicionar Medicamento
+                </button>
+                <button id="backupBtn" class="btn btn-info btn-lg">Salvar Backup (Download)</button>
+                <input type="file" id="restoreInput" accept=".json" style="display: none;">
+                <button id="restoreBtn" class="btn btn-warning btn-lg">Carregar Backup (Upload)</button>
+            </div>
+            <input type="text" id="searchInput" class="form-control form-control-lg w-50" placeholder="Buscar por nome do medicamento...">
+        </div>
+    
+        <div class="table-responsive">
+            <table class="table table-dark table-hover">
+                <thead>
+                    <tr>
+                        <th>Nome do Medicamento</th>
+                        <th>Quantidade</th>
+                        <th>Apresentação</th>
+                        <th>Data de Vencimento</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="medicationTableBody"></tbody>
+            </table>
+        </div>
+      </main>
+    </div>
+    
+    <footer class="footer">
+      <div class="container">
+        <span>Desenvolvido por <a href="https://www.instagram.com/solutytecnologia/#" target="_blank">ANTONIEL SOUSA </a> &copy; 2025. Todos os direitos reservados.</span>
+      </div>
+    </footer>
+</div>
+
+<div class="modal fade" id="medicationModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="medicationModalLabel">Adicionar Medicamento</h5>
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <form id="medicationForm">
+          <input type="hidden" id="medicationId">
+          <div class="form-group">
+            <label for="nome">Nome do Medicamento</label>
+            <input type="text" class="form-control" id="nome" required>
+          </div>
+          <div class="row">
+            <div class="col-md-6 form-group">
+              <label for="quantidade">Quantidade</label>
+              <input type="number" class="form-control" id="quantidade" min="0" required>
+            </div>
+            <div class="col-md-6 form-group">
+                <label for="apresentacao">Apresentação</label>
+                <select id="apresentacao" class="custom-select" required>
+                    <option value="">Selecione...</option>
+                    <option value="Comprimido">Comprimido</option>
+                    <option value="Líquido">Líquido</option>
+                    <option value="Bisnaga">Bisnaga</option>
+                    <option value="Suspensão">Suspensão</option>
+                </select>
+            </div>
+          </div>
+          <div class="form-group">
+              <label for="dataVencimento">Data de Vencimento</label>
+              <input type="date" class="form-control" id="dataVencimento" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="saveMedicationBtn">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loginOverlay = document.getElementById('login-overlay');
+    const loginForm = document.getElementById('login-form');
+    const loginError = document.getElementById('login-error');
+    const appContainer = document.getElementById('app-container');
+
+    const medicationTableBody = document.getElementById('medicationTableBody');
+    const searchInput = document.getElementById('searchInput');
+    const saveMedicationBtn = document.getElementById('saveMedicationBtn');
+    const medicationForm = document.getElementById('medicationForm');
+    const backupBtn = document.getElementById('backupBtn');
+    const restoreBtn = document.getElementById('restoreBtn');
+    const restoreInput = document.getElementById('restoreInput');
+
+    const users = [
+        { username: 'admin', passwordHash: '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918' },
+        { username: 'enfermagem', passwordHash: '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92' }
+    ];
+
+    async function sha256(string) {
+        const utf8 = new TextEncoder().encode(string);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex;
+    }
+
+    function applyRolePermissions() {
+        const role = sessionStorage.getItem('loggedInUserRole');
+        if (role) {
+            document.body.classList.add(`role-${role}`);
+        }
+    }
+
+    function showApp() {
+        loginOverlay.style.display = 'none';
+        appContainer.style.display = 'block';
+        applyRolePermissions();
+        initializeSystem();
+    }
+
+    if (sessionStorage.getItem('isLoggedIn') === 'true') {
+        showApp();
+    }
+
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('username').value.toLowerCase();
+        const password = document.getElementById('password').value;
+        const foundUser = users.find(user => user.username === username);
+        if (foundUser) {
+            const passwordHash = await sha256(password);
+            if (passwordHash === foundUser.passwordHash) {
+                sessionStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('loggedInUserRole', foundUser.username);
+                showApp();
+                return;
+            }
+        }
+        loginError.style.display = 'block';
+    });
+    
+    let medications = [];
+
+    function initializeSystem() {
+        const storedMedications = localStorage.getItem('farmaciaAmostras');
+        const parsedMedications = storedMedications ? JSON.parse(storedMedications) : [];
+        medications = parsedMedications;
+        renderMedicationTable();
+    }
+
+    function saveMedications() {
+        localStorage.setItem('farmaciaAmostras', JSON.stringify(medications));
+    };
+
+    const renderMedicationTable = (filter = '') => {
+        medicationTableBody.innerHTML = '';
+        const lowercasedFilter = filter.toLowerCase();
+        const filteredMeds = medications.filter(m => 
+            m.nome.toLowerCase().includes(lowercasedFilter)
+        );
+
+        if (filteredMeds.length === 0) {
+            medicationTableBody.innerHTML = `<tr><td colspan="5" class="text-center">Nenhum medicamento encontrado.</td></tr>`;
+            return;
+        }
+        
+        const sortedMeds = filteredMeds.sort((a, b) => new Date(a.dataVencimento) - new Date(b.dataVencimento));
+
+        sortedMeds.forEach(med => {
+            const tr = document.createElement('tr');
+            
+            const hoje = new Date();
+            hoje.setHours(0,0,0,0);
+            const vencimento = new Date(med.dataVencimento);
+            vencimento.setHours(23, 59, 59, 999);
+            const diffTime = vencimento - hoje;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            let vencimentoClass = '';
+            if (diffDays < 0) {
+                vencimentoClass = 'text-danger font-weight-bold';
+            } else if (diffDays <= 30) {
+                vencimentoClass = 'text-warning';
+            }
+            
+            const formattedDate = new Date(vencimento).toLocaleDateString('pt-BR', {timeZone: 'UTC'});
+
+            tr.innerHTML = `
+                <td>${med.nome}</td>
+                <td>${med.quantidade}</td>
+                <td>${med.apresentacao}</td>
+                <td class="${vencimentoClass}">${formattedDate}</td>
+                <td class="text-center">
+                    <button class="btn btn-warning btn-sm" onclick="editMedication('${med.id}')">Editar</button>
+                    <button class="btn btn-danger btn-sm delete-btn" onclick="deleteMedication('${med.id}')">Excluir</button>
+                </td>
+            `;
+            medicationTableBody.appendChild(tr);
+        });
+    };
+
+    saveMedicationBtn.addEventListener('click', () => {
+        const id = document.getElementById('medicationId').value;
+        const medData = {
+            nome: document.getElementById('nome').value,
+            quantidade: parseInt(document.getElementById('quantidade').value, 10),
+            apresentacao: document.getElementById('apresentacao').value,
+            dataVencimento: document.getElementById('dataVencimento').value
+        };
+
+        if (!medData.nome || isNaN(medData.quantidade) || !medData.apresentacao || !medData.dataVencimento) {
+            alert('Todos os campos são obrigatórios.');
+            return;
+        }
+
+        if (id) {
+            const index = medications.findIndex(m => m.id === id);
+            medications[index] = { ...medications[index], ...medData };
+        } else {
+            medications.push({ ...medData, id: Date.now().toString() });
+        }
+        
+        saveMedications();
+        renderMedicationTable(searchInput.value);
+        $('#medicationModal').modal('hide');
+    });
+    
+    window.editMedication = (id) => {
+        const med = medications.find(m => m.id === id);
+        document.getElementById('medicationModalLabel').innerText = 'Editar Medicamento';
+        document.getElementById('medicationId').value = med.id;
+        document.getElementById('nome').value = med.nome;
+        document.getElementById('quantidade').value = med.quantidade;
+        document.getElementById('apresentacao').value = med.apresentacao;
+        document.getElementById('dataVencimento').value = med.dataVencimento;
+        $('#medicationModal').modal('show');
+    };
+
+    window.deleteMedication = (id) => {
+        if (confirm('Tem certeza que deseja excluir este medicamento?')) {
+            medications = medications.filter(m => m.id !== id);
+            saveMedications();
+            renderMedicationTable(searchInput.value);
+        }
+    };
+
+    backupBtn.addEventListener('click', () => {
+        if (medications.length === 0) {
+            alert("Não há dados para salvar.");
+            return;
+        }
+
+        const dataStr = JSON.stringify(medications, null, 2);
+        const blob = new Blob([dataStr], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        const today = new Date().toISOString().split('T')[0];
+        link.download = `backup_farmacia_${today}.json`;
+        link.href = url;
+        link.click();
+        URL.revokeObjectURL(url);
+    });
+
+    restoreBtn.addEventListener('click', () => {
+        restoreInput.click();
+    });
+
+    restoreInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) {
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                if (!Array.isArray(importedData)) {
+                    throw new Error("O arquivo não contém uma lista de dados válida.");
+                }
+
+                if (confirm("Isso irá substituir todos os dados de estoque atuais pelos dados do arquivo. Deseja continuar?")) {
+                    medications = importedData;
+                    saveMedications();
+                    renderMedicationTable();
+                    alert("Backup carregado com sucesso!");
+                }
+            } catch (error) {
+                alert("Erro ao carregar o arquivo. Verifique se o arquivo é um backup válido.\n\nDetalhes: " + error.message);
+            } finally {
+                restoreInput.value = '';
+            }
+        };
+        reader.readAsText(file);
+    });
+    
+    searchInput.addEventListener('input', (e) => {
+        renderMedicationTable(e.target.value);
+    });
+    
+    $('#medicationModal').on('show.bs.modal', function (event) {
+        let button = $(event.relatedTarget);
+        if (!button.attr('onclick')) {
+            document.getElementById('medicationForm').reset();
+            document.getElementById('medicationId').value = '';
+            document.getElementById('medicationModalLabel').innerText = 'Adicionar Medicamento';
+        }
+    });
+
+});
+</script>
+</body>
+</html>
